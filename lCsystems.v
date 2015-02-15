@@ -1,5 +1,10 @@
 (** lCsystems by Vladimir Voevodsky,
-started Dec. 4, 2014, continued Jan. 22, 2015 *)
+started Dec. 4, 2014, continued Jan. 22, 2015 
+
+Note: this file was copied to the lBsystems repo on Feb. 11, 2015
+and will be developed there.
+
+*)
 
 Require Export Foundations.hlevel2.hnat .
 Require Export RezkCompletion.precategories.
