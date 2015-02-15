@@ -111,18 +111,8 @@ Definition q_of_f { CC : lC0system_data }
 
 
 
-(** A construction needed for the formulation of the axioms of lC0-systems. *)
 
-
-(* Definition wide_q { CC : lC0system_data }
-           { X : CC } { X' Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> X' ) ( e : X' = ft X ) : 
-  total2 ( fun fstarX => fstarX --> X ) :=
-  (pr2 CC) X Y gt0 ( transportf ( fun A : CC => ( Y --> A ) ) e f ) . *)
-
-
-
-
-(** The numbering of the axioms below is according to the Csubsystems paper
+(** The numbering of the conditions below is according to the Csubsystems paper
 
 The axioms 1-3 are consequences of the definition of a pointed l-tower (pltower) *)
            
@@ -224,16 +214,15 @@ Definition C0ax7a { CC : lC0system }
 Definition ftf { CC : ltower_and_p_precat } { X Y : CC } ( f : X --> Y ) : X --> ft Y :=
   f ;; pX Y . 
 
-
-Definition Ob_tilde { CC : lC0system } ( X : CC ) :=
+Definition Ob_tilde { CC : ltower_and_p_precat  } ( X : CC ) :=
   total2 ( fun r : ft X --> X => r ;; ( pX X ) = identity ( ft X ) ) .
 
-Definition Ob_tilde_to_mor_to { CC : lC0system } ( X : CC ) ( r : Ob_tilde X ) : mor_to X :=
+Definition Ob_tilde_to_mor_to { CC : ltower_and_p_precat } ( X : CC ) ( r : Ob_tilde X ) : mor_to X :=
   mor_to_constr ( pr1 r ) .
 Coercion Ob_tilde_to_mor_to : Ob_tilde >-> mor_to . 
 
-Definition Ob_tilde_to_mor_from { CC : lC0system } ( X : CC ) ( r : Ob_tilde X ) : mor_from ( ft X ) :=
-  mor_from_constr ( pr1 r ) .
+Definition Ob_tilde_to_mor_from { CC : ltower_and_p_precat  } ( X : CC ) ( r : Ob_tilde X ) :
+  mor_from ( ft X ) := mor_from_constr ( pr1 r ) .
 Coercion Ob_tilde_to_mor_from : Ob_tilde >-> mor_from . 
   
 
@@ -241,19 +230,26 @@ Coercion Ob_tilde_to_mor_from : Ob_tilde >-> mor_from .
 (** *** The lC-systems *)
 
 
-Definition s_f_type ( CC : lC0system ) :=
+
+(** **** The required structures/conditions on lC0systems 
+
+The structures/conditions on lC0-systems that will become axioms of lCsystems. *)
+
+
+
+Definition sf_type ( CC : lC0system ) :=
   forall ( Y X : CC ) ( gt0 : ll X > 0 ) ( f : Y --> X ) , Ob_tilde ( f_star gt0 ( ftf f ) ) .
 
-(* Definition s_f_ax1_type { CC : lC0system } ( s_f : s_f_type CC ) :=
+(* Definition sf_ax1_type { CC : lC0system } ( sf : sf_type CC ) :=
   forall ( Y X : CC ) ( gt0 : ll X > 0 ) ( f : Y --> X ) ,
-    s_f Y X gt0 f ;; pX ( f_star gt0 ( ftf f ) ) =
+    sf Y X gt0 f ;; pX ( f_star gt0 ( ftf f ) ) =
     transportb ( fun A => Y --> A ) ( C0ax5b gt0 ( ftf f ) ) ( identity Y ) . *)
 
-Definition s_f_ax1_type { CC : lC0system } ( s_f : s_f_type CC ) :=
+Definition sf_ax1_type { CC : lC0system } ( sf : sf_type CC ) :=
   forall ( Y X : CC ) ( gt0 : ll X > 0 ) ( f : Y --> X ) ,
-    ( C0emor gt0 ( ftf f ) ) ;; f = ( s_f Y X gt0 f ) ;; ( q_of_f gt0 ( ftf f ) ) .
+    ( C0emor gt0 ( ftf f ) ) ;; f = ( sf Y X gt0 f ) ;; ( q_of_f gt0 ( ftf f ) ) .
 
-Lemma s_f_ax2_type_l1 { CC : lC0system } ( s_f : s_f_type CC )
+Lemma sf_ax2_type_l1 { CC : lC0system } ( sf : sf_type CC )
       { Y Y' U : CC } ( gt0 : ll U > 0 )
       ( g : Y' --> ft U ) ( f : Y --> f_star gt0 g ) :
   f_star (C0ax5a gt0 g) (ftf f) = f_star gt0 (ftf (f ;; q_of_f gt0 g)) .
@@ -282,11 +278,42 @@ Proof.
 
 Defined.
 
-Definition s_f_ax2_type { CC : lC0system } ( s_f : s_f_type CC ) :=
+Definition sf_ax2_type { CC : lC0system } ( sf : sf_type CC ) :=
   forall ( Y Y' U : CC ) ( gt0 : ll U > 0 )
          ( g : Y' --> ft U ) ( f : Y --> f_star gt0 g ) ,
-     transportf Ob_tilde  (s_f_ax2_type_l1 s_f gt0 g f ) ( s_f Y _ ( C0ax5a gt0 g ) f ) =
-     s_f Y _ gt0 ( f ;; q_of_f gt0 g ) .  
+     transportf Ob_tilde  (sf_ax2_type_l1 sf gt0 g f ) ( sf Y _ ( C0ax5a gt0 g ) f ) =
+     sf Y _ gt0 ( f ;; q_of_f gt0 g ) .  
+
+
+(** **** The definition of the type of lCsystems *)
+
+
+
+Definition lCsystem :=
+  total2 ( fun CC : lC0system =>
+             total2 ( fun sf : sf_type CC =>
+                        dirprod ( sf_ax1_type sf ) ( sf_ax2_type sf ) ) ) .
+
+Definition lCsystem_pr1 : lCsystem -> lC0system := pr1 .
+Coercion lCsystem_pr1 : lCsystem >-> lC0system .
+
+Definition sf { CC : lCsystem } { Y X : CC } ( gt0 : ll X > 0 ) ( f : Y --> X ) :
+  Ob_tilde ( f_star gt0 ( ftf f ) ) :=
+  pr1 ( pr2 CC ) Y X gt0 f . 
+
+Definition sf_ax1 { CC : lCsystem } { Y X : CC } ( gt0 : ll X > 0 ) ( f : Y --> X ) :
+  ( C0emor gt0 ( ftf f ) ) ;; f = ( sf gt0 f ) ;; ( q_of_f gt0 ( ftf f ) ) :=
+  pr1 ( pr2 ( pr2 CC ) ) Y X gt0 f . 
+
+Definition sf_ax2 { CC : lCsystem } { Y Y' U : CC } ( gt0 : ll U > 0 )
+           ( g : Y' --> ft U ) ( f : Y --> f_star gt0 g ) :
+  transportf Ob_tilde  (sf_ax2_type_l1 ( @sf CC ) gt0 g f ) ( sf ( C0ax5a gt0 g ) f ) =
+  sf gt0 ( f ;; q_of_f gt0 g ) :=
+  pr2 ( pr2 ( pr2 CC ) ) Y Y' U gt0 g f .
+
+
+                                
+
 
 
 
