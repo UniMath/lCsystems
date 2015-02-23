@@ -108,7 +108,7 @@ Definition Ob_tilde_over_eq { CC : ltower_precat_and_p  } { X : CC } ( r : Ob_ti
 
 
 Definition pltower_precat_and_p :=
-  total2 ( fun CC : ltower_precat_and_p => ispointed CC ) .
+  total2 ( fun CC : ltower_precat_and_p => ispointed_type CC ) .
 
 Definition pltower_precat_and_p_pr1 : pltower_precat_and_p ->
                                              ltower_precat_and_p := pr1 .
@@ -191,23 +191,28 @@ Definition C0ax7_type { CC : lC0system_data }
 
 Definition lC0system :=
   total2 ( fun CC : lC0system_data =>
-             dirprod ( C0ax4_type CC )
+             dirprod ( dirprod ( isaset CC ) ( has_homsets CC ) )
+                     ( dirprod ( C0ax4_type CC )
                      ( total2 ( fun axs : dirprod ( C0ax5a_type CC )
                                                   ( total2 ( fun ax5b : C0ax5b_type CC =>
                                                                C0ax5c_type ax5b ) ) => 
                                   dirprod ( C0ax6_type CC )
-                                          ( C0ax7_type ( pr1 axs ) ( pr1 ( pr2 axs ) ) ) ) ) ) .
+                                          ( C0ax7_type ( pr1 axs ) ( pr1 ( pr2 axs ) ) ) ) ) ) ) .
 
 Definition lC0system_pr1 : lC0system -> lC0system_data := pr1 .
-Coercion lC0system_pr1 : lC0system >-> lC0system_data . 
+Coercion lC0system_pr1 : lC0system >-> lC0system_data .
 
-Definition C0ax4 ( CC : lC0system ) : C0ax4_type CC := pr1 ( pr2 CC ) . 
+Definition C0_isaset_Ob ( CC : lC0system ) : isaset CC := pr1 ( pr1 ( pr2 CC ) ) .
+
+Definition C0_has_homsets ( CC : lC0system ) : has_homsets CC := pr2 ( pr1 ( pr2 CC ) ) . 
+
+Definition C0ax4 ( CC : lC0system ) : C0ax4_type CC := pr1 ( pr2 ( pr2 CC ) ) . 
 
 Definition C0ax5a { CC : lC0system } { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) :
-  ll ( f_star gt0 f ) > 0 := pr1 ( pr1 ( pr2 ( pr2 CC ) ) ) X Y gt0 f .
+  ll ( f_star gt0 f ) > 0 := pr1 ( pr1 ( pr2 ( pr2 ( pr2 CC ) ) ) ) X Y gt0 f .
 
 Definition C0ax5b { CC : lC0system } { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) :
-  ft ( f_star gt0 f ) = Y := pr1 ( pr2 ( pr1 ( pr2 ( pr2 CC )))) X Y gt0 f .
+  ft ( f_star gt0 f ) = Y := pr1 ( pr2 ( pr1 ( pr2 ( pr2 ( pr2 CC ) )))) X Y gt0 f .
 
 Notation ft_f_star := C0ax5b . 
 
@@ -219,12 +224,12 @@ Definition C0ax5c { CC : lC0system }
            { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) : 
   pX ( f_star gt0 f ) ;; ( ( C0emor gt0 f ) ;; f ) =
   ( q_of_f gt0 f ) ;; ( pX X ) :=
-  pr2 ( pr2 ( pr1 ( pr2 ( pr2 CC )))) X Y gt0 f . 
+  pr2 ( pr2 ( pr1 ( pr2 ( pr2 ( pr2 CC ) )))) X Y gt0 f . 
 
 
 Definition C0ax6 { CC : lC0system } { X : CC } ( gt0 : ll X > 0 ) :
   q_of_f gt0 ( identity ( ft X ) ) = mor_to_constr ( identity X ) :=
-  pr1 ( pr2 ( pr2 ( pr2 CC ))) X gt0 .
+  pr1 ( pr2 ( pr2 ( pr2 ( pr2 CC ) ))) X gt0 .
 
 Definition C0ax6a { CC : lC0system } { X : CC } ( gt0 : ll X > 0 ) :
   f_star gt0 ( identity ( ft X ) ) = X :=
@@ -234,7 +239,7 @@ Definition C0ax7 { CC : lC0system }
            { X Y Z : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) ( g : Z --> ft ( f_star gt0 f ) ) :
   mor_to_constr ( ( q_of_f ( C0ax5a gt0 f ) g ) ;; ( q_of_f gt0 f ) ) =
   q_of_f gt0 ( g ;; ( ( C0emor gt0 f ) ;; f ) ) :=
-  pr2 ( pr2 ( pr2 ( pr2 CC ))) X Y Z gt0 f g . 
+  pr2 ( pr2 ( pr2 ( pr2 ( pr2 CC ) ))) X Y Z gt0 f g . 
 
 Definition C0ax7a { CC : lC0system }
            { X Y Z : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) ( g : Z --> ft ( f_star gt0 f ) ) :
