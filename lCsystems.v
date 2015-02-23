@@ -9,10 +9,6 @@ The definition of an lC-system given below does not require that the types of ob
 of the underlying precategory form a set. It also does not require the
 proporties of the identity morphisms but does require associativity. 
 
-We do however assume both that the types of objects and morphisms are sets and the axioms
-for the identity morphisms for the convenience of the future use of the notions of l-C0-systems and
-l-C-systems. 
-
  *)
 
 Require Export Foundations.hlevel2.hnat .
@@ -30,28 +26,15 @@ Notation "f ;; g" := (compose f g)(at level 50).
 Definition mor_from { C : precategory_ob_mor } ( X : C ) :=
   total2 ( fun A : C => X --> A ) .
 
-Definition codom { C : precategory_ob_mor } { X : C } ( f : mor_from X ) :
-  C := pr1 f . 
-
 Definition mor_from_pr2 { C : precategory_ob_mor } ( X : C ) :
   forall f : mor_from X , precategory_morphisms X ( pr1 f ) := pr2 .  
 Coercion mor_from_pr2 : mor_from >-> precategory_morphisms  . 
 
 Definition mor_from_constr { C : precategory_ob_mor } { X A : C } ( f : X --> A ) :
-  mor_from X := tpair _ _ f .
-
-Definition idenity_from { C : precategory_data } ( X : C ) :
-  mor_from X := mor_from_constr ( identity X ) .
-
-Definition compose_from { C : precategory } { X Y : C } ( f : X --> Y ) ( g : mor_from Y ) :
-  mor_from X := mor_from_constr ( f ;; g ) . 
-  
+  mor_from X := tpair _ _ f . 
 
 Definition mor_to { C : precategory_ob_mor } ( X : C ) :=
   total2 ( fun A : C => A --> X ) .
-
-Definition dom { C : precategory_ob_mor } { X : C } ( f : mor_to X ) :
-  C := pr1 f .  
 
 Definition mor_to_pr2 { C : precategory_ob_mor } ( X : C ) :
   forall f : mor_to X , precategory_morphisms ( pr1 f ) X := pr2 .  
@@ -60,35 +43,8 @@ Coercion mor_to_pr2 : mor_to >-> precategory_morphisms  .
 Definition mor_to_constr { C : precategory_ob_mor } { X A : C } ( f : A --> X ) :
   mor_to X := tpair ( fun A : C => A --> X ) _ f .
 
-Definition identity_to { C : precategory_data } ( X : C ) :
-  mor_to X := mor_to_constr ( identity X ) .
-
-Definition compose_to { C : precategory } { X Y : C } ( g : mor_to Y ) ( f : X --> dom g )  :
-  mor_to Y := mor_to_constr ( f ;; g ) .
-
-Notation "f ;;to g" := ( compose_to g f ) ( at level 50). 
-
 Definition id_to_mor { C : precategory_data } { X X' : C } ( e : X = X' ) : X --> X' :=
-  transportf ( fun Y => X --> Y ) e ( identity X ) .
-
-Definition assoc_to { C : precategory } { X : C }
-           ( h : mor_to X ) ( g : mor_to ( dom h ) ) ( f : mor_to ( dom g ) ) :
-  ( f ;;to (g ;;to h) ) = (f ;;to g) ;;to h .
-Proof.
-  intros . 
-  assert ( assoc_int : f ;; ( g ;; h ) = ( f ;; g ) ;; h ) . 
-  apply assoc . 
-  apply ( maponpaths ( fun u => mor_to_constr u ) ) . 
-  apply assoc_int . 
-
-Defined.
-
-
-
-
-
-
-
+  transportf ( fun Y => X --> Y ) e ( identity X ) . 
 
 
 
@@ -123,14 +79,14 @@ Definition ltower_precat_and_p :=
 Definition ltower_precat_and_p_pr1 : ltower_precat_and_p -> ltower_precat := pr1 . 
 Coercion ltower_precat_and_p_pr1 : ltower_precat_and_p >-> ltower_precat . 
                                                           
-Definition pX { CC : ltower_precat_and_p } ( X : CC ) : mor_to ( ft X ) := mor_to_constr ( pr2 CC X ) .
+Definition pX { CC : ltower_precat_and_p } ( X : CC ) : X --> ft X := pr2 CC X .
 
 
 (** **** Some constructions *)
 
 
-Definition ftf { CC : ltower_precat_and_p } { X : CC } ( f : mor_to X ) : mor_to ( ft X ) :=
-  f ;;to ( pX X ) . 
+Definition ftf { CC : ltower_precat_and_p } { X Y : CC } ( f : X --> Y ) : X --> ft Y :=
+  f ;; pX Y . 
 
 Definition Ob_tilde_over { CC : ltower_precat_and_p  } ( X : CC ) :=
   total2 ( fun r : ft X --> X => r ;; ( pX X ) = identity ( ft X ) ) .
@@ -152,7 +108,7 @@ Definition Ob_tilde_over_eq { CC : ltower_precat_and_p  } { X : CC } ( r : Ob_ti
 
 
 Definition pltower_precat_and_p :=
-  total2 ( fun CC : ltower_precat_and_p => ispointed_type CC ) .
+  total2 ( fun CC : ltower_precat_and_p => ispointed CC ) .
 
 Definition pltower_precat_and_p_pr1 : pltower_precat_and_p ->
                                              ltower_precat_and_p := pr1 .
@@ -179,11 +135,11 @@ Coercion lC0system_data_pr1 : lC0system_data >-> pltower_precat_and_p .
 
 
 Definition q_of_f { CC : lC0system_data }  
-           { X : CC } ( gt0 : ll X > 0 ) ( f : mor_to ( ft X ) ) : mor_to X :=
+           { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) : mor_to X :=
   pr2 CC _ _ gt0 f . 
 
 Definition f_star { CC : lC0system_data }  
-           { X : CC } ( gt0 : ll X > 0 ) ( f : mor_to ( ft X ) ) : CC := 
+           { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) : CC := 
   pr1 ( q_of_f gt0 f ) .
 
 
@@ -199,35 +155,34 @@ Definition C0ax4_type ( CC : pltower_precat_and_p ) :=
   forall X : CC , iscontr ( X --> cntr CC ) . 
 
 Definition C0ax5a_type ( CC : lC0system_data ) :=
-  forall ( X : CC ) ( gt0 : ll X > 0 ) ( f : mor_to ( ft X ) ) , ll ( f_star gt0 f ) > 0  .
+  forall ( X Y : CC ) ( gt0 : ll X > 0 ) ( f : Y --> ft X ) , ll ( f_star gt0 f ) > 0  .
 
 Definition C0ax5b_type ( CC : lC0system_data ) :=
-  forall ( X : CC ) ( gt0 : ll X > 0 ) ( f : mor_to ( ft X ) ) , ft ( f_star gt0 f ) = dom f .
+  forall ( X Y : CC ) ( gt0 : ll X > 0 ) ( f : Y --> ft X ) , ft ( f_star gt0 f ) = Y .
 
 (** A construction needed to formulate further properties of the C0-system data. *)
 
 Definition C0ax5b_mor { CC : lC0system_data } ( ax5b : C0ax5b_type CC )
-           { X : CC } ( gt0 : ll X > 0 ) ( f : mor_to ( ft X ) ) :
-  ft ( f_star gt0 f ) --> dom f := id_to_mor ( ax5b X gt0 f ) . 
+           { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) :
+  ft ( f_star gt0 f ) --> Y := id_to_mor ( ax5b X Y gt0 f ) . 
   
 
 (** The description of properties continues *)
 
 Definition C0ax5c_type { CC : lC0system_data }
            ( ax5b : C0ax5b_type CC ) := 
-  forall ( X : CC ) ( gt0 : ll X > 0 ) ( f : mor_to ( ft X ) ) , 
+  forall ( X Y : CC ) ( gt0 : ll X > 0 ) ( f : Y --> ft X ) , 
     pX ( f_star gt0 f ) ;; ( ( C0ax5b_mor ax5b gt0 f ) ;; f ) = ( q_of_f gt0 f ) ;; ( pX X ) . 
 
 Definition C0ax6_type ( CC : lC0system_data ) :=
   forall ( X : CC ) ( gt0 : ll X > 0 ) ,
-    q_of_f gt0 ( identity_to ( ft X ) ) = mor_to_constr ( identity X ) . 
+    q_of_f gt0 ( identity ( ft X ) ) = mor_to_constr ( identity X ) . 
 
 Definition C0ax7_type { CC : lC0system_data } 
   ( ax5a : C0ax5a_type CC ) ( ax5b : C0ax5b_type CC ) :=
-  forall ( X : CC ) ( gt0 : ll X > 0 )
-         ( f : mor_to ( ft X ) ) ( g : mor_to ( ft ( f_star gt0 f ) ) ) ,
-    ( q_of_f ( ax5a _ gt0 f ) g ) ;;to q_of_f gt0 f =
-    q_of_f gt0 ( g ;;to ( ( C0ax5b_mor ax5b gt0 f ) ;;to f ) ) . 
+  forall ( X Y Z : CC ) ( gt0 : ll X > 0 ) ( f : Y --> ft X ) ( g : Z --> ft ( f_star gt0 f ) ) ,
+    mor_to_constr ( ( q_of_f ( ax5a _ _ gt0 f ) g ) ;; ( q_of_f gt0 f ) ) =
+    q_of_f gt0 ( g ;; ( ( C0ax5b_mor ax5b gt0 f ) ;; f ) ) . 
 
 
 
@@ -236,67 +191,60 @@ Definition C0ax7_type { CC : lC0system_data }
 
 Definition lC0system :=
   total2 ( fun CC : lC0system_data =>
-             dirprod ( dirprod ( isaset CC ) ( has_homsets CC ) )
-                     ( dirprod ( C0ax4_type CC )
-                               ( total2 ( fun axs : dirprod ( C0ax5a_type CC )
-                                                            ( total2 ( fun ax5b : C0ax5b_type CC =>
-                                                                         C0ax5c_type ax5b ) ) => 
-                                            dirprod ( C0ax6_type CC )
-                                                    ( C0ax7_type ( pr1 axs ) ( pr1 ( pr2 axs ))))))) .
+             dirprod ( C0ax4_type CC )
+                     ( total2 ( fun axs : dirprod ( C0ax5a_type CC )
+                                                  ( total2 ( fun ax5b : C0ax5b_type CC =>
+                                                               C0ax5c_type ax5b ) ) => 
+                                  dirprod ( C0ax6_type CC )
+                                          ( C0ax7_type ( pr1 axs ) ( pr1 ( pr2 axs ) ) ) ) ) ) .
 
 Definition lC0system_pr1 : lC0system -> lC0system_data := pr1 .
-Coercion lC0system_pr1 : lC0system >-> lC0system_data .
+Coercion lC0system_pr1 : lC0system >-> lC0system_data . 
 
-Definition C0_isaset_Ob ( CC : lC0system ) : isaset CC := pr1 ( pr1 ( pr2 CC ) ) .
+Definition C0ax4 ( CC : lC0system ) : C0ax4_type CC := pr1 ( pr2 CC ) . 
 
-Definition C0_has_homsets ( CC : lC0system ) : has_homsets CC := pr2 ( pr1 ( pr2 CC ) ) . 
+Definition C0ax5a { CC : lC0system } { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) :
+  ll ( f_star gt0 f ) > 0 := pr1 ( pr1 ( pr2 ( pr2 CC ) ) ) X Y gt0 f .
 
-Definition C0ax4 ( CC : lC0system ) : C0ax4_type CC := pr1 ( pr2 ( pr2 CC ) ) . 
-
-Definition C0ax5a { CC : lC0system } { X : CC } ( gt0 : ll X > 0 ) ( f : mor_to ( ft X ) ) :
-  ll ( f_star gt0 f ) > 0 := pr1 ( pr1 ( pr2 ( pr2 ( pr2 CC ) ) ) ) X gt0 f .
-
-Definition C0ax5b { CC : lC0system } { X : CC } ( gt0 : ll X > 0 ) ( f : mor_to ( ft X ) ) :
-  ft ( f_star gt0 f ) = dom f := pr1 ( pr2 ( pr1 ( pr2 ( pr2 ( pr2 CC ) )))) X gt0 f .
+Definition C0ax5b { CC : lC0system } { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) :
+  ft ( f_star gt0 f ) = Y := pr1 ( pr2 ( pr1 ( pr2 ( pr2 CC )))) X Y gt0 f .
 
 Notation ft_f_star := C0ax5b . 
 
-Definition C0emor { CC : lC0system } { X : CC } ( gt0 : ll X > 0 ) ( f : mor_to ( ft X ) ) :
-  ft ( f_star gt0 f ) --> dom f := C0ax5b_mor ( @C0ax5b CC ) gt0 f . 
+Definition C0emor { CC : lC0system } { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) :
+  ft ( f_star gt0 f ) --> Y := C0ax5b_mor ( @C0ax5b CC ) gt0 f . 
 
 
 Definition C0ax5c { CC : lC0system }
-           { X : CC } ( gt0 : ll X > 0 ) ( f : mor_to ( ft X ) ) : 
+           { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) : 
   pX ( f_star gt0 f ) ;; ( ( C0emor gt0 f ) ;; f ) =
   ( q_of_f gt0 f ) ;; ( pX X ) :=
-  pr2 ( pr2 ( pr1 ( pr2 ( pr2 ( pr2 CC ) )))) X gt0 f . 
+  pr2 ( pr2 ( pr1 ( pr2 ( pr2 CC )))) X Y gt0 f . 
 
 
 Definition C0ax6 { CC : lC0system } { X : CC } ( gt0 : ll X > 0 ) :
-  q_of_f gt0 ( identity_to ( ft X ) ) = identity_to X :=
-  pr1 ( pr2 ( pr2 ( pr2 ( pr2 CC ) ))) X gt0 .
+  q_of_f gt0 ( identity ( ft X ) ) = mor_to_constr ( identity X ) :=
+  pr1 ( pr2 ( pr2 ( pr2 CC ))) X gt0 .
 
 Definition C0ax6a { CC : lC0system } { X : CC } ( gt0 : ll X > 0 ) :
-  f_star gt0 ( identity_to ( ft X ) ) = X :=
+  f_star gt0 ( identity ( ft X ) ) = X :=
   maponpaths pr1 ( C0ax6 gt0 ) . 
 
 Definition C0ax7 { CC : lC0system }
-           { X : CC } ( gt0 : ll X > 0 )
-           ( f : mor_to ( ft X ) ) ( g : mor_to ( ft ( f_star gt0 f ) )) :
-  ( q_of_f ( C0ax5a gt0 f ) g ) ;;to ( q_of_f gt0 f ) =
-  q_of_f gt0 ( g ;;to ( ( C0emor gt0 f ) ;;to f ) ) :=
-  pr2 ( pr2 ( pr2 ( pr2 ( pr2 CC ) ))) X gt0 f g . 
+           { X Y Z : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) ( g : Z --> ft ( f_star gt0 f ) ) :
+  mor_to_constr ( ( q_of_f ( C0ax5a gt0 f ) g ) ;; ( q_of_f gt0 f ) ) =
+  q_of_f gt0 ( g ;; ( ( C0emor gt0 f ) ;; f ) ) :=
+  pr2 ( pr2 ( pr2 ( pr2 CC ))) X Y Z gt0 f g . 
 
 Definition C0ax7a { CC : lC0system }
-           { X : CC } ( gt0 : ll X > 0 )
-           ( f : mor_to ( ft X ) ) ( g : mor_to ( ft ( f_star gt0 f ))) :
-  f_star ( C0ax5a gt0 f ) g = f_star gt0 ( g ;;to ( ( C0emor gt0 f ) ;;to f  ) ) :=
-  maponpaths dom ( C0ax7 gt0 f g ) . 
+           { X Y Z : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) ( g : Z --> ft ( f_star gt0 f ) ) :
+  f_star ( C0ax5a gt0 f ) g = f_star gt0 ( g ;; ( ( C0emor gt0 f ) ;; f ) ) :=
+  maponpaths pr1 ( C0ax7 gt0 f g ) . 
 
 (** **** Some simple properties of lC0systems *)
 
-Lemma ll_f_star { CC : lC0system } { X : CC } ( gt0 : ll X > 0 ) ( f : mor_to ( ft X ) ) :
-  ll ( f_star gt0 f ) = 1 + ll ( dom f : CC ) .
+Lemma ll_f_star { CC : lC0system } { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) :
+  ll ( f_star gt0 f ) = 1 + ll Y .
 Proof .
   intros . 
   assert ( gt0' : ll ( f_star gt0 f ) > 0 ) . apply C0ax5a .
@@ -314,7 +262,7 @@ Defined.
 (** **** l-C-system data *) 
 
 Definition sf_type ( CC : lC0system_data ) :=
-  forall ( X : CC ) ( gt0 : ll X > 0 ) ( f : mor_to X ) , Ob_tilde_over ( f_star gt0 ( ftf f ) ) .
+  forall ( Y X : CC ) ( gt0 : ll X > 0 ) ( f : Y --> X ) , Ob_tilde_over ( f_star gt0 ( ftf f ) ) .
 
 Definition lCsystem_data := total2 ( fun CC : lC0system_data => sf_type CC ) .
 
@@ -324,9 +272,9 @@ Definition lCsystem_data_constr { CC : lC0system_data } ( sf0 : sf_type CC ) : l
 Definition lCsystem_data_pr1 : lCsystem_data -> lC0system_data := pr1 .
 Coercion lCsystem_data_pr1 : lCsystem_data >-> lC0system_data .
 
-Definition sf_from_data { CC : lCsystem_data } { X : CC } ( gt0 : ll X > 0 ) ( f : mor_to X ) :
+Definition sf_from_data { CC : lCsystem_data } { Y X : CC } ( gt0 : ll X > 0 ) ( f : Y --> X ) :
   Ob_tilde_over ( f_star gt0 ( ftf f ) ) :=
-  pr2 CC X gt0 f . 
+  pr2 CC Y X gt0 f . 
 
 
 
@@ -339,34 +287,31 @@ that later become axioms of l-C-systems. *)
 
 
 Definition sf_ax1_type { CC : lC0system } ( sf0 : sf_type CC ) :=
-  forall ( X : CC ) ( gt0 : ll X > 0 ) ( f : mor_to X ) ,
-    ( C0emor gt0 ( ftf f ) ) ;; f = ( sf0 _ gt0 f ) ;; ( q_of_f gt0 ( ftf f ) ) .
+  forall ( Y X : CC ) ( gt0 : ll X > 0 ) ( f : Y --> X ) ,
+    ( C0emor gt0 ( ftf f ) ) ;; f = ( sf0 _ _ gt0 f ) ;; ( q_of_f gt0 ( ftf f ) ) .
 
 Lemma sf_ax2_type_l1 { CC : lC0system } ( sf0 : sf_type CC )
-      { U : CC } ( gt0 : ll U > 0 )
-      ( g : mor_to ( ft U ) ) ( f : mor_to ( f_star gt0 g ) ) :
-  f_star (C0ax5a gt0 g) (ftf f) = f_star gt0 (ftf (f ;;to (q_of_f gt0 g))) .
+      { Y Y' U : CC } ( gt0 : ll U > 0 )
+      ( g : Y' --> ft U ) ( f : Y --> f_star gt0 g ) :
+  f_star (C0ax5a gt0 g) (ftf f) = f_star gt0 (ftf (f ;; q_of_f gt0 g)) .
 Proof.
   intros. 
   assert ( int1 : f_star (C0ax5a gt0 g) (ftf f) =
-                  f_star gt0 ( ( ftf f ) ;;to ( ( C0emor gt0 g ) ;;to g ) ) ) .
+                  f_star gt0 ( ( ftf f ) ;; ( ( C0emor gt0 g ) ;; g ) ) ) .
   apply C0ax7a.
 
-  assert ( int2 : f_star gt0 ( ( ftf f ) ;;to ( ( C0emor gt0 g ) ;;to g ) ) =
-                  f_star gt0 ( f ;;to ( ( pX _ ) ;;to ( ( C0emor gt0 g ) ;;to g ) ) ) ) . 
-  unfold ftf .
-  unfold compose_to . 
-  simpl . rewrite <- assoc . 
+  assert ( int2 : f_star gt0 ( ( ftf f ) ;; ( ( C0emor gt0 g ) ;; g ) ) =
+                  f_star gt0 ( f ;; ( ( pX _ ) ;; ( ( C0emor gt0 g ) ;; g ) ) ) ) . 
+  unfold ftf . rewrite <- assoc . 
   apply idpath . 
 
-  assert ( int3 : f_star gt0 ( f ;;to ( ( pX _ ) ;;to ( ( C0emor gt0 g ) ;;to g ) ) ) =
-                  f_star gt0 ( f ;;to ( ( q_of_f gt0 g ) ;;to ( pX U ) ) ) ) .
-  unfold ftf .   unfold compose_to . 
-  rewrite C0ax5c .
+  assert ( int3 : f_star gt0 ( f ;; ( ( pX _ ) ;; ( ( C0emor gt0 g ) ;; g ) ) ) =
+                  f_star gt0 ( f ;; ( ( q_of_f gt0 g ) ;; ( pX U ) ) ) ) .
+  unfold ftf . rewrite C0ax5c .
   apply idpath . 
 
-  assert ( int4 : f_star gt0 ( f ;;to ( ( q_of_f gt0 g ) ;;to ( pX U ) ) ) =
-                  f_star gt0 (ftf (f ;;to q_of_f gt0 g)) ) .
+  assert ( int4 : f_star gt0 ( f ;; ( ( q_of_f gt0 g ) ;; ( pX U ) ) ) =
+                  f_star gt0 (ftf (f ;; q_of_f gt0 g)) ) .
   unfold ftf . rewrite assoc .
   apply idpath . 
 
@@ -378,7 +323,7 @@ Definition sf_ax2_type { CC : lC0system } ( sf : sf_type CC ) :=
   forall ( Y Y' U : CC ) ( gt0 : ll U > 0 )
          ( g : Y' --> ft U ) ( f : Y --> f_star gt0 g ) ,
      transportf Ob_tilde_over  (sf_ax2_type_l1 sf gt0 g f ) ( sf Y _ ( C0ax5a gt0 g ) f ) =
-     sf Y _ gt0 ( f ;;to q_of_f gt0 g ) .  
+     sf Y _ gt0 ( f ;; q_of_f gt0 g ) .  
 
 
 (** **** The definition of the type of l-C-systems *)
@@ -400,13 +345,13 @@ Definition sf { CC : lCsystem } { Y X : CC } ( gt0 : ll X > 0 ) ( f : Y --> X ) 
   Ob_tilde_over ( f_star gt0 ( ftf f ) ) := ( pr1 ( pr2 CC ) ) Y X gt0 f . 
 
 Definition sf_ax1 { CC : lCsystem } { Y X : CC } ( gt0 : ll X > 0 ) ( f : Y --> X ) :
-  ( C0emor gt0 ( ftf f ) ) ;;to f  = ( sf gt0 f ) ;;to ( q_of_f gt0 ( ftf f ) ) :=
+  ( C0emor gt0 ( ftf f ) ) ;; f  = ( sf gt0 f ) ;; ( q_of_f gt0 ( ftf f ) ) :=
   pr1 ( pr2 ( pr2 CC ) ) Y X gt0 f .
 
 Definition sf_ax2 { CC : lCsystem } { Y Y' U : CC } ( gt0 : ll U > 0 )
            ( g : Y' --> ft U ) ( f : Y --> f_star gt0 g ) :
   transportf Ob_tilde_over  (sf_ax2_type_l1 ( @sf CC ) gt0 g f ) ( sf ( C0ax5a gt0 g ) f ) =
-  sf gt0 ( f ;;to q_of_f gt0 g ) :=
+  sf gt0 ( f ;; q_of_f gt0 g ) :=
   pr2 ( pr2 ( pr2 CC ) ) Y Y' U gt0 g f .
 
 
@@ -424,7 +369,7 @@ Proof.
   induction n as [ | n IHn ] .
   intros . 
   change _ with ( X = A ) in eq . 
-  apply ( mor_to_constr ( f ;;to id_to_mor ( ! eq ) ) ) . 
+  apply ( mor_to_constr ( f ;; id_to_mor ( ! eq ) ) ) . 
 
   intros .
 
@@ -433,16 +378,6 @@ Proof.
   apply ( q_of_f gt0 ( IHn ( ft X ) ( ll_ft_gtn gtn ) ( int @ eq ) ) ) . 
 
 Defined.
-
-
-Definition fn_star { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
-           { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A ) : CC := pr1 ( qn f n gtn eq ) .
-
-
-
-
-(** **** Properties of operations qn and fn_star *)
-
 
 Lemma qn_equals_qn { CC : lC0system_data } ( is : isaset CC )
       { Y A : CC } ( f : Y --> A )
@@ -467,92 +402,36 @@ Proof.
 Defined.
 
 
-Lemma q0 { CC : lC0system } { Y A : CC } ( f : Y --> A ) { n : nat } 
-      { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A )
-      ( eq' : X = A ) :
-  qn f n gtn eq = mor_to_constr ( f ;;to id_to_mor ( ! eq' ) )  .
-Proof .
-  intros . assert ( lleq := maponpaths ll eq ) . 
-  rewrite ll_ftn in lleq . 
-  rewrite <- eq' in lleq .
-  assert ( lleq' := maponpaths ( fun x => x + n ) lleq ) . simpl in  lleq' . 
-  rewrite ( minusplusnmm _ _ gtn ) in lleq' . 
-  assert ( lleq'' := maponpaths ( fun x => x - ( ll X ) ) lleq' ) . simpl in lleq'' . 
-  rewrite natminusnn in lleq'' . 
-  rewrite natpluscomm in lleq'' . rewrite plusminusnmm  in lleq'' .
-  assert ( eqint : qn f n gtn eq = qn f 0 ( natgehn0 _ ) eq' ) . 
-  apply qn_equals_qn . 
-  apply C0_isaset_Ob . 
 
-  apply ( ! lleq'' ) .
-  rewrite eqint . 
-  apply idpath . 
 
-Defined.
+  
+  
 
 
 
-Definition qsn_strict { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+
+
+
+
+      
+
+Definition qsn { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
       { X : CC } ( gtsn : ll X >= S n ) ( eq : ftn (S n) X = A )  :
   qn f ( S n ) gtsn eq =
   q_of_f (natgehgthtrans _ _ _ gtsn ( natgthsn0 _ ))
          ( qn f n ( ll_ft_gtn gtsn ) ( ( ftn_ft n X ) @ eq ) ) :=
-  idpath _ .
-
-Definition qsn_new_eq { T : ltower } { A X : T } { n m : nat }
-           ( eq : ftn n X = A ) ( eqnat : n = S m ) : ftn ( S m ) X = A .
-Proof .
-  intros .
-  apply ( ( maponpaths ( fun i => ftn i X ) ( ! eqnat ) ) @ eq ) . 
-
-Defined.
+  idpath _ . 
 
 
-Definition qsn_new_gtn { T : ltower } { X : T } { n m : nat }
-           ( gtn : ll X >= n ) ( eqnat : n = S m ) : ll X >= S m .
-Proof.
-  intros.
-  rewrite eqnat in gtn . apply gtn .
+Definition fn_star { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+           { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A ) : CC := pr1 ( qn f n gtn eq ) .
 
-Defined.
-
-
-Lemma qn_to_qsm { CC : lC0system } { Y A : CC } ( f : Y --> A ) { n : nat } 
-      { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A )
-      { m : nat } ( eqnat : n = S m ) :
-  qn f n gtn eq =
-  qn f ( S m ) ( qsn_new_gtn gtn eqnat ) ( qsn_new_eq eq eqnat ) .
-Proof.
-  intros .
-  apply qn_equals_qn .
-  
-  apply C0_isaset_Ob .
-
-  apply eqnat .
-
-Defined.
-
-
-
-Definition fsn_strict { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+Definition fsn { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
            { X : CC } ( gtsn : ll X >= S n ) ( eq : ftn ( S n ) X = A ) :
   fn_star f ( S n ) gtsn eq =
   f_star (natgehgthtrans _ _ _ gtsn ( natgthsn0 _ ))
          ( qn f n ( ll_ft_gtn gtsn ) ( ( ftn_ft n X ) @ eq ) ) :=
   idpath _ .
-
-
-Definition fn_star_to_fsm_star { CC : lC0system } { Y A : CC } ( f : Y --> A ) { n : nat } 
-      { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A )
-      { m : nat } ( eqnat : n = S m ) :
-  fn_star f n gtn eq =
-  fn_star f ( S m ) ( qsn_new_gtn gtn eqnat ) ( qsn_new_eq eq eqnat ) :=
-  maponpaths pr1 ( qn_to_qsm _ _ _ _ ) . 
-
-
-
-
-
 
 
 
@@ -599,12 +478,12 @@ Definition f_star_of_s { CC : lCsystem } { Y X : CC } ( f : Y --> ft X )
   Ob_tilde_over ( f_star gt0 f ) . 
 Proof .
   intros . 
-  assert ( int := sf gt0 ( f ;;to r ) ) .  
-  assert ( inteq : ftf ( f ;;to r ) = f ) . 
+  assert ( int := sf gt0 ( f ;; r ) ) .  
+  assert ( inteq : ftf ( f ;; r ) = f ) . 
   unfold ftf . 
   rewrite <- assoc.
-  set ( eq := Ob_tilde_over_eq r : (r;;to pX X)= _) . 
-  change ( f ;;to (r ;;to pX X ) = f ) .  
+  set ( eq := Ob_tilde_over_eq r : (r;; pX X)= _) . 
+  change ( f ;; (r ;; pX X ) = f ) .  
   rewrite eq .
   apply id_right . 
 
@@ -615,7 +494,7 @@ Defined.
 
   
 
-(** **** Operation fsn_star_of_s *)
+(** **** Operation fsn_start_of_s *)
 
 
 Definition fsn_star_of_s { CC : lCsystem } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
