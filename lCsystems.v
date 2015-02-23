@@ -361,6 +361,229 @@ Definition sf_ax2 { CC : lCsystem } { Y Y' U : CC } ( gt0 : ll U > 0 )
 
 
 
+(** *** Operations qn, fn_star and f_star_of_s and fn_star_of_s  *)
+
+
+(** **** Operations qn and fn_star *)
+
+Definition qn { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+           { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A )  : mor_to X .
+Proof.
+  intros until n . 
+  induction n as [ | n IHn ] .
+  intros . 
+  change _ with ( X = A ) in eq . 
+  apply ( mor_to_constr ( f ;; id_to_mor ( ! eq ) ) ) . 
+
+  intros .
+
+  set ( int := ftn_ft n X : ftn n ( ft X ) = ftn ( 1 + n ) X ) .
+  set ( gt0 := natgehgthtrans _ _ _ gtn ( natgthsn0 _ ) ) . 
+  apply ( q_of_f gt0 ( IHn ( ft X ) ( ll_ft_gtn gtn ) ( int @ eq ) ) ) . 
+
+Defined.
+
+
+Definition fn_star { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+           { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A ) : CC := pr1 ( qn f n gtn eq ) .
+
+
+
+
+
+(** **** Properties of operations qn and fn_star *)
+
+
+Lemma qn_equals_qn { CC : lC0system_data } ( is : isaset CC )
+      { Y A : CC } ( f : Y --> A )
+      { n1 n2 : nat } ( eqn : n1 = n2 ) 
+      { X : CC }
+      ( gtn1 : ll X >= n1 ) ( gtn2 : ll X >= n2 )
+      ( eq1 : ftn n1 X = A ) ( eq2 : ftn n2 X = A ) :
+  qn f n1 gtn1 eq1 = qn f n2 gtn2 eq2 .
+Proof.
+  intros until n2 . 
+  intro eqn . 
+  rewrite eqn .
+  intros until gtn2 . 
+  assert ( eq : gtn1 = gtn2 ) .  apply ( proofirrelevance _ ( pr2 ( _ >= _ ) ) ) . 
+  rewrite eq . 
+  intros eq1 eq2 . 
+  assert ( eq' : eq1 = eq2 ) .
+  apply is . 
+  rewrite eq' . 
+  apply idpath .
+
+Defined.
+
+
+Lemma q0 { CC : lC0system } { Y A : CC } ( f : Y --> A ) { n : nat } 
+      { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A )
+      ( eq' : X = A ) :
+  qn f n gtn eq = mor_to_constr ( f ;; id_to_mor ( ! eq' ) )  .
+Proof .
+  intros . assert ( lleq := maponpaths ll eq ) . 
+  rewrite ll_ftn in lleq . 
+  rewrite <- eq' in lleq .
+  assert ( lleq' := maponpaths ( fun x => x + n ) lleq ) . simpl in  lleq' . 
+  rewrite ( minusplusnmm _ _ gtn ) in lleq' . 
+  assert ( lleq'' := maponpaths ( fun x => x - ( ll X ) ) lleq' ) . simpl in lleq'' . 
+  rewrite natminusnn in lleq'' . 
+  rewrite natpluscomm in lleq'' . rewrite plusminusnmm  in lleq'' .
+  assert ( eqint : qn f n gtn eq = qn f 0 ( natgehn0 _ ) eq' ) . 
+  apply qn_equals_qn . 
+  apply C0_isaset_Ob . 
+
+  apply ( ! lleq'' ) .
+  rewrite eqint . 
+  apply idpath . 
+
+Defined.
+
+
+
+Definition qsn_strict { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+      { X : CC } ( gtsn : ll X >= S n ) ( eq : ftn (S n) X = A )  :
+  qn f ( S n ) gtsn eq =
+  q_of_f (natgehgthtrans _ _ _ gtsn ( natgthsn0 _ ))
+         ( qn f n ( ll_ft_gtn gtsn ) ( ( ftn_ft n X ) @ eq ) ) :=
+  idpath _ .
+
+Definition qsn_new_eq { T : ltower } { A X : T } { n m : nat }
+           ( eq : ftn n X = A ) ( eqnat : n = S m ) : ftn ( S m ) X = A .
+Proof .
+  intros .
+  apply ( ( maponpaths ( fun i => ftn i X ) ( ! eqnat ) ) @ eq ) . 
+
+Defined.
+
+
+Definition qsn_new_gtn { T : ltower } { X : T } { n m : nat }
+           ( gtn : ll X >= n ) ( eqnat : n = S m ) : ll X >= S m .
+Proof.
+  intros.
+  rewrite eqnat in gtn . apply gtn .
+
+Defined.
+
+
+Lemma qn_to_qsm { CC : lC0system } { Y A : CC } ( f : Y --> A ) { n : nat } 
+      { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A )
+      { m : nat } ( eqnat : n = S m ) :
+  qn f n gtn eq =
+  qn f ( S m ) ( qsn_new_gtn gtn eqnat ) ( qsn_new_eq eq eqnat ) .
+Proof.
+  intros .
+  apply qn_equals_qn .
+  
+  apply C0_isaset_Ob .
+
+  apply eqnat .
+
+Defined.
+
+
+
+Definition fsn_strict { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+           { X : CC } ( gtsn : ll X >= S n ) ( eq : ftn ( S n ) X = A ) :
+  fn_star f ( S n ) gtsn eq =
+  f_star (natgehgthtrans _ _ _ gtsn ( natgthsn0 _ ))
+         ( qn f n ( ll_ft_gtn gtsn ) ( ( ftn_ft n X ) @ eq ) ) :=
+  idpath _ .
+
+
+Definition fn_star_to_fsm_star { CC : lC0system } { Y A : CC } ( f : Y --> A ) { n : nat } 
+      { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A )
+      { m : nat } ( eqnat : n = S m ) :
+  fn_star f n gtn eq =
+  fn_star f ( S m ) ( qsn_new_gtn gtn eqnat ) ( qsn_new_eq eq eqnat ) :=
+  maponpaths pr1 ( qn_to_qsm _ _ _ _ ) . 
+
+
+
+
+
+
+
+
+Lemma ll_fn_star { CC : lC0system } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+      { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A ) :
+  ll ( fn_star f n gtn eq ) = ll Y + n . 
+Proof.
+  intros until n . induction n as [ | n IHn ] .
+  intros .
+  rewrite natplusr0 . apply idpath .
+
+  intros . 
+  change ( ll ( fn_star _ _ _ _ ) ) with ( ll ( f_star (natgehgthtrans _ _ _ gtn ( natgthsn0 _ ))
+         ( qn f n ( ll_ft_gtn gtn ) ( ( ftn_ft n X ) @ eq ) ) ) ) . 
+  rewrite ll_f_star .
+  unfold fn_star in IHn . rewrite IHn .
+  apply ( ! ( natplusnsm ( ll Y ) n ) ) . 
+
+Defined.
+
+Lemma isover_fn_star { CC : lC0system } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+      { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A ) : isover ( fn_star f n gtn eq ) Y .
+Proof.
+  intros until n .  induction n as [ | n IHn ] .
+  intros .  apply isover_XX . 
+
+  intros .
+  refine ( isover_trans ( isover_X_ftX _ ) _ ) . 
+  change (fn_star f (S n) gtn eq) with ( f_star (natgehgthtrans _ _ _ gtn ( natgthsn0 _ ))
+                                                ( qn f n ( ll_ft_gtn gtn ) ( ( ftn_ft n X ) @ eq ) ) ) .
+  rewrite ft_f_star .
+  apply IHn . 
+
+Defined.
+
+
+
+  
+
+(** **** Operation f_star_of_s *)
+
+Definition f_star_of_s { CC : lCsystem } { Y X : CC } ( f : Y --> ft X )
+           ( gt0 : ll X > 0 ) ( r : Ob_tilde_over X ) :
+  Ob_tilde_over ( f_star gt0 f ) . 
+Proof .
+  intros . 
+  assert ( int := sf gt0 ( f ;; r ) ) .  
+  assert ( inteq : ftf ( f ;; r ) = f ) . 
+  unfold ftf . 
+  rewrite <- assoc.
+  set ( eq := Ob_tilde_over_eq r : (r;; pX X)= _) . 
+  change ( f ;; (r ;; pX X ) = f ) .  
+  rewrite eq .
+  apply id_right . 
+
+  rewrite inteq in int . 
+  apply int . 
+
+Defined.
+
+  
+
+(** **** Operation fsn_star_of_s *)
+
+
+Definition fsn_star_of_s { CC : lCsystem } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+           { X : CC } ( gtsn : ll X >= 1 + n ) ( eq : ftn ( 1 + n ) X = A ) ( r : Ob_tilde_over X ) :
+  Ob_tilde_over ( fn_star f ( 1 + n ) gtsn eq ) .  
+Proof .
+  intros.
+  set ( int := ftn_ft n X : ftn n ( ft X ) = ftn ( 1 + n ) X ) .
+  set ( gt0 := natgehgthtrans _ _ _ gtsn ( natgthsn0 _ ) ) .
+  set ( qnint :=   qn f n ( ll_ft_gtn gtsn ) ( int @ eq ) : mor_to ( ft X ) ) . 
+  change ( fn_star f ( 1 + n ) gtsn eq ) with ( f_star gt0 qnint ) .
+  apply ( f_star_of_s qnint gt0 r ) . 
+
+Defined.
+
+
+(*
+
                                 
 (** *** Operations qn, fn_star and f_star_of_s and fn_star_of_s  *)
 
@@ -516,7 +739,7 @@ Proof .
 Defined.
 
 
-
+*)
 
 
 (* End of the file lCsystems.v *)
