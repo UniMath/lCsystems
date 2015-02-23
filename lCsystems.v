@@ -127,7 +127,6 @@ Definition q_data_type ( CC : ltower_precat_and_p ) :=
   forall ( X Y : CC ) ( gt0 : ll X > 0 ) ( f : Y --> ft X ) , mor_to X . 
 Identity Coercion from_q_data_type : q_data_type >-> Funclass .  
 
-
 Definition lC0system_data := total2 ( fun CC : pltower_precat_and_p => q_data_type CC ) .
 
 Definition lC0system_data_pr1 : lC0system_data -> pltower_precat_and_p  := pr1 .
@@ -141,6 +140,17 @@ Definition q_of_f { CC : lC0system_data }
 Definition f_star { CC : lC0system_data }  
            { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) : CC := 
   pr1 ( q_of_f gt0 f ) .
+
+(** Formulation of q_of_f as a function from mor_to to mor_to *)
+
+Definition q_of_mor_to { CC : lC0system_data } { X : CC } ( gt0 : ll X > 0 )
+           ( f : mor_to ( ft X ) ) : mor_to X :=
+  q_of_f gt0 f .
+
+Definition mor_to_star { CC : lC0system_data } { X : CC } ( gt0 : ll X > 0 )
+           ( f : mor_to ( ft X ) ) : CC :=
+  f_star gt0 f .
+
 
 
 (** **** Properties on l-C0-system data 
