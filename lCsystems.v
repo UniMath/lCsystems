@@ -354,12 +354,15 @@ Proof.
 
   assert ( int2 : f_star gt0 ( ( ftf f ) ;;to ( ( C0emor gt0 g ) ;;to g ) ) =
                   f_star gt0 ( f ;;to ( ( pX _ ) ;;to ( ( C0emor gt0 g ) ;;to g ) ) ) ) . 
-  unfold ftf . change ( mor_to_constr (  with ( rewrite <- assoc_to . 
+  unfold ftf .
+  unfold compose_to . 
+  simpl . rewrite <- assoc . 
   apply idpath . 
 
   assert ( int3 : f_star gt0 ( f ;;to ( ( pX _ ) ;;to ( ( C0emor gt0 g ) ;;to g ) ) ) =
                   f_star gt0 ( f ;;to ( ( q_of_f gt0 g ) ;;to ( pX U ) ) ) ) .
-  unfold ftf . rewrite C0ax5c .
+  unfold ftf .   unfold compose_to . 
+  rewrite C0ax5c .
   apply idpath . 
 
   assert ( int4 : f_star gt0 ( f ;;to ( ( q_of_f gt0 g ) ;;to ( pX U ) ) ) =
