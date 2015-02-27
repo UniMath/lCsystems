@@ -88,7 +88,8 @@ endif
 #                    #
 ######################
 
-VFILES:=lCsystems.v
+VFILES:=lC_to_lB0.v\
+  lCsystems.v
 
 -include $(addsuffix .d,$(VFILES))
 .SECONDARY: $(addsuffix .d,$(VFILES))
