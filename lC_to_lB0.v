@@ -420,7 +420,7 @@ Definition dom_qS { CC : lC0system } { r : Tilde_B_from_C CC } { X : B_carrier_f
 (** **** Operation S_ext and the inductive property of operation S *)
 
 
-Notation S_ext_from_C := ( S_ext ( S_from_C _ ) ) .
+Notation S_ext_from_C := ( S_fun.S_ext ( S_from_C _ ) ) .
 
 Definition qS_ext { CC : lC0system } { r : Tilde_B_from_C CC } { X : B_carrier_from_C CC }
            ( inn : S_ext_dom r X ) : mor_to X .

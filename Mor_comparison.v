@@ -13,7 +13,8 @@ Unset Automatic Introduction.
 Require Export lCsystems.lC_to_lB0.
 Require Export lBsystems.lB_to_precat.
 
-        
+
+
 
 
 
@@ -25,42 +26,88 @@ Require Export lBsystems.lB_to_precat.
 
 (** **** Construction of a function from iterated_sections to morphisms *)
 
-Definition iter_sec_to_mor { CC : lCsystem } { m : nat } { Z : CC } { le : m <= ll Z }
-           ( itrs : @iter_sec ( lB0_from_C CC ) m Z le ) : ftn m Z --> Z .
+Definition Tilde_dd_to_mor { CC : lCsystem } { X : CC } ( s : @Tilde_dd ( lB0_from_C CC ) X ) :
+  ft X --> X .
+Proof.
+  intros .
+  set ( s' := pr1 s ) .
+  set ( s_eq := pr2 s : dd s' = X ) .
+  set ( s_mor := pr1 ( pr2 ( pr2 s') ) : ft ( dd s' ) --> dd s' ) .
+  rewrite s_eq in s_mor . 
+  exact s_mor.
+
+Defined.
+
+
+Lemma Tilden_dd_to_mor_ll_eq_0_lemma { T : ltower } ( m : nat ) ( Z : T ) ( eq : Z = ftn ( S m ) Z ) :
+  ft Z = Z .
+Proof.
+  intros . assert ( lleq := maponpaths ll eq ) .  rewrite ll_ftn in lleq . 
+  assert ( eq00 : ll Z = 0 ) .
+  destruct ( natgehchoice _ _ ( natgehn0 ( ll Z ) ) ) as [ gt0 | eq0 ] . 
+  assert ( absd : empty ) . 
+  assert ( le : ll Z - ( 1 + m ) < ll Z ) . 
+  rewrite <- natminusassoc . 
+  refine ( natgthgehtrans _ _ _ _ ( natminuslehn _ m ) ) . 
+  refine ( natminuslthn _ _ gt0 _ ) . 
+  apply idpath .
+  change _ with ( ll Z = ll Z - ( 1 + m ) ) in lleq . 
+  rewrite <- lleq in le . 
+  apply ( negnatlthnn _ le ) . 
+  destruct absd . 
+
+  apply eq0.
+
+  apply ftX_eq_X . 
+
+  exact eq00.
+
+Defined.
+
+
+  
+Definition Tilden_dd_to_mor { CC : lCsystem } { m : nat } { Z : CC }
+           ( itrs : @Tilden_dd ( lB0_from_C CC ) m Z ) : ftn m Z --> Z .
 Proof.
   intros until m . 
-  induction m . 
+  induction m as [ | m IHm ] . 
   intros . 
   apply ( identity Z ) .
 
   intros . 
-  simpl in itrs . 
-  destruct (natgehchoice m 0 (natgehn0 m)) as [ gt0 | eq0 ] .
+  simpl in itrs .  
+  destruct m as [ | m ] .
+  apply ( Tilde_dd_to_mor itrs ) .
 
-  set ( s := pr1 itrs ) .
-  set ( s_eq := pr2 ( pr1 itrs ) : dd s = ftn m Z ) .
-  set ( s_mor := pr2 ( pr2 ( pr1 ( pr1 itrs ) ) ) : ft ( dd s ) --> dd s ) .
-  set ( inn := (@iter_sec_inn ( lB0_from_C CC ) _ _ gt0 le s)).
-  set ( le' := (@iter_sec_le ( lB0_from_C CC ) _ _ gt0 le s)).
-  set ( sm := pr2 itrs : iter_sec m (@S_op ( lB0_from_C CC ) s Z inn) le') . 
-  assert ( s1 := IHm (@S_op ( lB0_from_C CC ) s Z inn) le' sm ) . 
+  set ( s1 := pr1 itrs ) . 
+  set ( s1' := pr1 ( pr1 itrs ) ) .
+  set ( s_eq := pr2 ( pr1 itrs ) : dd s1' = ftn ( S m ) Z ) .
+  set ( s_mor := pr1 ( pr2 ( pr2 s1' ) ) : ft ( dd s1' ) --> dd s1' ) .
+  set ( inn := (@Tilden_dd_inn ( lB0_from_C CC ) _ _ s1)).
+  set ( sm := pr2 itrs : Tilden_dd ( S m ) (@S_ext ( lB0_from_C CC ) s1 Z inn)) . 
+  assert ( f := IHm (@S_ext ( lB0_from_C CC ) s1 Z inn) sm ) . 
 
-  assert ( qn_from_S : @S_op ( lB0_from_C CC ) s Z inn --> Z ) .  
-  unfold S_op.
-  simpl .
-  unfold S_from_C . 
-  exact ( qn s_mor (ll Z - ll (dd s)) _ _ ) .
+  assert ( qn_from_S : @S_ext ( lB0_from_C CC ) s1 Z inn --> Z ) .  
+  unfold S_ext. unfold S_fun.S_ext . Set Printing Coercions.
+  change (match ovab_choice inn with
+   | ii1 isab => @S_op ( lB0_from_C CC ) (Tilde_dd_pr1 s1) Z isab
+   | ii2 _ => ft (dd (Tilde_dd_pr1 s1))
+   end --> Z).  destruct (ovab_choice inn) as [ isab | iseq ] .  
+  exact ( qn s_mor (ll Z - ll (dd s1)) _ _ ) .
 
-  assert ( eq : ftn ( S m ) Z = ftn m ( @S_op ( lB0_from_C CC ) s Z inn ) ) . 
-  assert ( isov : isover ( ( @S_op ( lB0_from_C CC ) s Z inn ) ) ( ft ( dd s ) ) ) .
-  apply isabove_to_isover .  apply S_ax1b_from_C . 
+  rewrite iseq . rewrite iseq in s_eq . apply ( id_to_mor ( Tilden_dd_to_mor_ll_eq_0_lemma _ _ s_eq ) ) .
 
-  unfold isover in isov . 
+  assert ( eq : ftn ( S ( S m ) ) Z = ftn ( S m ) ( @S_ext ( lB0_from_C CC ) s1 Z inn ) ) . 
+  assert ( isov : isover ( ( @S_ext ( lB0_from_C CC ) s1 Z inn ) ) ( ft ( dd s1 ) ) ) .
+  apply isover_S_ext . apply ( @S_ax1b ( lB0_from_C CC ) ) . 
+  
+  unfold isover in isov . change (Tilde_dd_pr1 s1) with s1' in isov . 
   rewrite s_eq in isov . 
-  change ( ftn ( S m ) Z ) with ( ft ( ftn m Z ) ) . 
+  change ( ftn ( S ( S m ) ) Z ) with ( ft ( ftn ( S m ) Z ) ) .  
   refine ( isov @ _ ) . 
-  assert ( eq_in_nat : ll (@S_op ( lB0_from_C CC ) s Z inn) - ll (ft (ftn m Z)) = m ) . 
-  rewrite ll_S .
+  assert ( eq_in_nat : ll (@S_ext ( lB0_from_C CC ) s1 Z inn) - ll (ft (ftn ( S m ) Z)) = ( S m ) ) .
+  unfold S_ext .
+  rewrite ll_S_ext . 
   rewrite ll_ft . 
   rewrite ll_ftn .
   rewrite natmiusmius1mminus1 . 
@@ -74,7 +121,7 @@ Proof.
 
   apply ( maponpaths ( fun n => ftn n _ ) eq_in_nat ) .
 
-  apply ( ( id_to_mor eq ) ;; s1 ;; qn_from_S ) . 
+  apply ( ( id_to_mor eq ) ;; f ;; qn_from_S ) . 
 
   rewrite eq0 . 
   change ( ft Z --> Z ) . 
@@ -156,7 +203,7 @@ Definition Mor_lB0_from_C_to_Mor { CC : lCsystem } ( X Y : CC )
 Proof .
   intros .
   unfold Mor_from_B in f . 
-  set ( int1 := iter_sec_to_mor f ) .
+  set ( int1 := Tilden_dd_to_mor f ) .
   assert ( eq : ftn ( ll Y ) ( @Tprod ( lB0_from_C CC ) X Y ) = X ) . 
   set ( isov := @isover_Tprod ( lB0_from_C CC ) X Y ) . 
   unfold isover in isov . 

@@ -81,6 +81,21 @@ Coercion ltower_precat_and_p_pr1 : ltower_precat_and_p >-> ltower_precat .
                                                           
 Definition pX { CC : ltower_precat_and_p } ( X : CC ) : X --> ft X := pr2 CC X .
 
+Fixpoint pnX { CC : ltower_precat_and_p } ( n : nat ) ( X : CC ) :=
+  match n return ( X --> ftn n X ) with
+    | 0 => identity X
+    | S n' => pnX n' X ;; pX ( ftn n' X )
+  end .
+
+
+Definition sec_pX { CC : ltower_precat_and_p } ( X : CC ) :=
+  total2 ( fun f : ft X --> X => f ;; pX X = identity ( ft X ) ) . 
+
+Definition sec_pnX { CC : ltower_precat_and_p } ( n : nat ) ( X : CC ) :=
+  total2 ( fun f : ftn n X --> X => f ;; pnX n X = identity ( ftn n X ) ) . 
+
+  
+
 
 (** **** Some constructions *)
 
