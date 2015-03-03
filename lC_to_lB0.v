@@ -204,7 +204,7 @@ Definition dom_qT { CC : lC0system } { X1 X2 : B_carrier_from_C CC } ( inn : T_d
 (** **** Operation T_ext and the inductive property of operation T *)
 
 
-Notation T_ext_from_C := ( T_ext ( T_from_C _ ) ) .
+Notation T_ext_from_C := ( T_fun.T_ext ( T_from_C _ ) ) .
 
 Definition qT_ext { CC : lC0system } { X1 X2 : B_carrier_from_C CC } ( inn : T_ext_dom X1 X2 ) :
   mor_to X2 .

@@ -1,6 +1,6 @@
 (** ** Comparison on morphisms.  
 
-by Vladimir Voevodsky, split from the file lBsystems_to_precategories.v  on
+by Vladimir Voevodsky, split from the file lBsystems.lBsystems_to_precategories.v  on
 March 3, 2015 
 
 Comparing morphisms of the lB0-system defined by an lC-system with morphisms 
@@ -95,7 +95,7 @@ Proof .
   intros.
   rewrite ( @Tprod_compt ( lB0_from_C CC ) _ _ gt0 ) .
   unfold T_ext .   
-  unfold lBsystems_T_fun_Tj_Ttj.T_ext .
+  unfold T_fun.T_ext .
   change ( ll X > 0 ) with ( ll ( X : ( lB0_from_C CC ) ) > 0 ) in gt0 . 
   set ( ch := ovab_choice (pr2 (T_ext_dom_constr gt0 (isover_Tprod (ft ( X  : ( lB0_from_C CC ) )) Z)))) .
   destruct ch as [ isab | iseq ] . 
@@ -123,7 +123,7 @@ Proof.
   unfold Tprod . 
   unfold Tprod_over . 
   unfold Tprod_fun . 
-  unfold lBsystems_T_fun_Tj_Ttj.Tj_fun.
+  unfold T_fun.Tj_fun.
   rewrite (@isover_ind_compt0 ( lB0_from_C CC )). 
   simpl . 
   apply identity . 
