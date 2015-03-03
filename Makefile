@@ -88,7 +88,8 @@ endif
 #                    #
 ######################
 
-VFILES:=lC_to_lB0.v\
+VFILES:=Mor_comparison.v\
+  lC_to_lB0.v\
   lCsystems.v
 
 -include $(addsuffix .d,$(VFILES))
