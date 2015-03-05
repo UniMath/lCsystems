@@ -90,7 +90,8 @@ endif
 
 VFILES:=Mor_comparison.v\
   lC_to_lB0.v\
-  lCsystems.v
+  lCsystems.v\
+  lC0systems.v
 
 -include $(addsuffix .d,$(VFILES))
 .SECONDARY: $(addsuffix .d,$(VFILES))

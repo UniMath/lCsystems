@@ -11,7 +11,7 @@ of the original lC-system.
 Unset Automatic Introduction.
 
 Require Export lCsystems.lC_to_lB0.
-Require Export lBsystems.lB_to_precat.
+Require Export lBsystems.lB_to_precat. 
 
 
 
@@ -223,10 +223,9 @@ Proof.
   refine ( tpair _ _ _ ).
   split with X.  
   split with ( geh1_to_gth0 le ).
-  unfold Ob_tilde_over.
-  split with ( pr1 s ). 
-  apply ( pr2 s ).
-  apply idpath.
+  exact s .
+
+  apply idpath . 
 
 Defined.
 
@@ -247,14 +246,6 @@ Defined.
 
 
 
-
-
-
-
-
-
-
-  
 
 
 (*Definition sec_pnX_to_Tilden_dd { CC : lCsystem }

@@ -16,7 +16,7 @@ Unset Automatic Introduction.
 (** *** Constructing the lB-system carrier *)
 
 Definition Tilde_from_C ( CC : ltower_precat_and_p ) :=
-  total2 ( fun X : CC => dirprod ( ll X > 0 ) ( Ob_tilde_over X ) ) .
+  total2 ( fun X : CC => dirprod ( ll X > 0 ) ( sec_pX X ) ) .
 
 
 Lemma isaset_Tilde_from_C ( CC : lC0system ) : isaset ( Tilde_from_C CC ) .
@@ -26,7 +26,6 @@ Proof.
   apply is2 . 
 
   intro X . 
-  unfold Ob_tilde_over .
   apply ( isofhleveltotal2 2 ) .
 
   apply isasetaprop .
@@ -52,9 +51,9 @@ Definition ll_dd_from_C { CC : ltower_precat_and_p } ( r : Tilde_from_C CC ) :
   ll ( dd_from_C r ) > 0 := pr1 ( pr2 r ) . 
 
 
-Definition Tilde_from_C_to_Ob_tilde_over { CC : ltower_precat_and_p } ( r : Tilde_from_C CC ) :
-  Ob_tilde_over ( dd_from_C r ) := pr2 ( pr2 r ) .
-Coercion Tilde_from_C_to_Ob_tilde_over : Tilde_from_C >-> Ob_tilde_over . 
+Definition Tilde_from_C_to_sec_pX { CC : ltower_precat_and_p } ( r : Tilde_from_C CC ) :
+  sec_pX ( dd_from_C r ) := pr2 ( pr2 r ) .
+Coercion Tilde_from_C_to_sec_pX : Tilde_from_C >-> sec_pnX .
 
 
 
@@ -306,7 +305,7 @@ Proof.
   unfold S_ops_type.
   intros r X inn . 
   set ( Y := ft ( dd r ) ) . set ( A := dd r ) . change _ with ( Tilde_from_C CC ) in r . 
-  set ( f := r : Y --> A ) .
+  set ( f := pr2 ( pr2 r ) : Y --> A ) .
   set ( n := ll X - ll A ) .
   assert ( e : ftn n X = A ) . 
   set ( isov := inn : isover X A ) . 
@@ -404,8 +403,8 @@ Coercion  Tilde_B_from_C_to_Tilde_from_C : Tilde_B_from_C >-> Tilde_from_C .
 Definition qS { CC : lC0system } { r : Tilde_B_from_C CC  } { X : B_carrier_from_C CC }
            ( inn : S_dom r X ) :
   mor_to X :=
-  qn r (ll X - ll (dd r)) (natminuslehn (ll X) (ll (dd r)))
-     (! ( isabove_to_isover (  inn) ) ).
+  qn ( pr2 ( pr2 r ) ) (ll X - ll (dd r)) (natminuslehn (ll X) (ll (dd r)))
+     (! ( isabove_to_isover inn ) ).
 
 Definition dom_qS { CC : lC0system } { r : Tilde_B_from_C CC } { X : B_carrier_from_C CC }
            ( inn : S_dom r X ) :
@@ -434,6 +433,7 @@ Proof.
   destruct (ovab_choice inn) as [ isab | iseq ] .
   apply ( pr2 ( qS isab ) ) . 
 
+  simpl . 
   apply ( r ;; id_to_mor ( ! iseq ) ) . 
 
 Defined.
@@ -531,8 +531,8 @@ Proof .
   set ( f := qT_ext (T_dom_to_T_ext_dom_ft inn)).
   assert ( eq : ( pr2 f ) = ftf ( f ;; r ) ) . 
   unfold ftf . 
-  rewrite <- assoc . 
-  change (( pr2 f) = f;; (r;; pX (dd_from_C r))).  rewrite ( Ob_tilde_over_eq r ) . 
+  rewrite <- assoc .  change (r;; pX (dd_from_C r)) with (r;; pnX 1 (dd_from_C r)).
+  rewrite sec_pX_eq .  
   rewrite id_right . 
   apply idpath .
 
@@ -578,7 +578,7 @@ Proof .
   assert ( eq : ( pr2 f ) = ftf ( f ;; r ) ) . 
   unfold ftf . 
   rewrite <- assoc . 
-  change (( pr2 f) = f;; (r;; pX (dd_from_C r))).  rewrite ( Ob_tilde_over_eq r ) . 
+  change (( pr2 f) = f;; (r;; pnX 1 (dd_from_C r))).  rewrite ( sec_pX_eq r ) . 
   rewrite id_right . 
   apply idpath .
 
