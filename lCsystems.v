@@ -81,21 +81,28 @@ Coercion ltower_precat_and_p_pr1 : ltower_precat_and_p >-> ltower_precat .
                                                           
 Definition pX { CC : ltower_precat_and_p } ( X : CC ) : X --> ft X := pr2 CC X .
 
-Fixpoint pnX { CC : ltower_precat_and_p } ( n : nat ) ( X : CC ) :=
-  match n return ( X --> ftn n X ) with
-    | 0 => identity X
-    | S n' => pnX n' X ;; pX ( ftn n' X )
-  end .
+Definition pnX { CC : ltower_precat_and_p } ( n : nat ) ( X : CC ) : X --> ftn n X . 
+Proof.
+  intros.
+  induction n as [ | n IHn ]. 
+  exact ( identity X ). 
 
+  destruct n as [ | n ].
+  exact ( pX X ). 
 
-Definition sec_pX { CC : ltower_precat_and_p } ( X : CC ) :=
-  total2 ( fun f : ft X --> X => f ;; pX X = identity ( ft X ) ) . 
+  exact ( IHn ;; pX ( ftn ( S n ) X ) ).
+
+Defined.
+
 
 Definition sec_pnX { CC : ltower_precat_and_p } ( n : nat ) ( X : CC ) :=
   total2 ( fun f : ftn n X --> X => f ;; pnX n X = identity ( ftn n X ) ) . 
 
-  
+Notation sec_pX := (sec_pnX 1) .
 
+Definition sec_pnX_to_mor { CC : ltower_precat_and_p } ( n : nat ) ( X : CC ) :
+  sec_pnX n X -> ftn n X --> X := pr1.
+Coercion sec_pnX_to_mor : sec_pnX >-> precategory_morphisms.
 
 (** **** Some constructions *)
 
