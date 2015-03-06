@@ -10,7 +10,7 @@ by V. Voevodsky as "Csubsystems".
 
 Require Export Foundations.hlevel2.hnat .
 Require Export RezkCompletion.precategories.
-Require Export lBsystems.ltowers.
+Require Export lBsystems.hSet_ltowers.
 
 Unset Automatic Introduction.
 
@@ -51,7 +51,7 @@ The following sequence of definitions is a formalization of Definition 2.1 in Cs
 
 (** **** The carrier of an lC0-system 
 
-as a precategory whose objects for a pointed hSet-ltower with the additional structure of
+as a set precategory whose objects form a pointed hSet-ltower with the additional structure of
 the canonical projections pX : X --> ft X . *)
 
 
@@ -59,11 +59,13 @@ the canonical projections pX : X --> ft X . *)
 (** **** l-tower precategories *)
 
 
-Definition ltower_precat := total2 ( fun C : precategory => ltower_str C ) . 
+Definition ltower_precat := total2 ( fun C : setcategory => ltower_str C ) . 
 
-Definition ltower_precat_to_ltower ( CC : ltower_precat ) : ltower :=
-  tpair ( fun C : UU => ltower_str C ) ( pr1 CC ) ( pr2 CC ) .
-Coercion ltower_precat_to_ltower : ltower_precat >-> ltower .
+Definition ltower_precat_to_ltower ( CC : ltower_precat ) : hSet_ltower :=
+  hSet_ltower_constr
+    ( tpair ( fun C : UU => ltower_str C ) ( pr1 CC ) ( pr2 CC ) )
+    ( pr1 ( pr2 ( pr1  CC ) ) ) .
+Coercion ltower_precat_to_ltower : ltower_precat >-> hSet_ltower .
 
 Definition ltower_precat_pr1 : ltower_precat -> precategory := pr1 .
 Coercion ltower_precat_pr1 : ltower_precat >-> precategory .
@@ -157,6 +159,10 @@ Definition lC0system_data := total2 ( fun CC : pltower_precat_and_p => q_data_ty
 Definition lC0system_data_pr1 : lC0system_data -> pltower_precat_and_p  := pr1 .
 Coercion lC0system_data_pr1 : lC0system_data >-> pltower_precat_and_p .
 
+Definition codom { CC : lC0system_data } { X : CC } ( f : mor_from X ) : CC := pr1 f .
+
+Definition dom { CC : lC0system_data } { X : CC } ( f : mor_to X ) : CC := pr1 f .
+
 
 Definition q_of_f { CC : lC0system_data }  
            { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) : mor_to X :=
@@ -226,28 +232,27 @@ Definition C0ax7_type { CC : lC0system_data }
 
 Definition lC0system :=
   total2 ( fun CC : lC0system_data =>
-             dirprod ( dirprod ( isaset CC ) ( has_homsets CC ) )
-                     ( dirprod ( C0ax4_type CC )
+                     dirprod ( C0ax4_type CC )
                      ( total2 ( fun axs : dirprod ( C0ax5a_type CC )
                                                   ( total2 ( fun ax5b : C0ax5b_type CC =>
                                                                C0ax5c_type ax5b ) ) => 
                                   dirprod ( C0ax6_type CC )
-                                          ( C0ax7_type ( pr1 axs ) ( pr1 ( pr2 axs ) ) ) ) ) ) ) .
+                                          ( C0ax7_type ( pr1 axs ) ( pr1 ( pr2 axs ) ) ) ) ) ) .
 
 Definition lC0system_pr1 : lC0system -> lC0system_data := pr1 .
 Coercion lC0system_pr1 : lC0system >-> lC0system_data .
 
-Definition C0_isaset_Ob ( CC : lC0system ) : isaset CC := pr1 ( pr1 ( pr2 CC ) ) .
+(* Definition C0_isaset_Ob ( CC : lC0system ) : isaset CC := pr1 ( pr1 ( pr2 CC ) ) .
 
-Definition C0_has_homsets ( CC : lC0system ) : has_homsets CC := pr2 ( pr1 ( pr2 CC ) ) . 
+Definition C0_has_homsets ( CC : lC0system ) : has_homsets CC := pr2 ( pr1 ( pr2 CC ) ) . *)
 
-Definition C0ax4 ( CC : lC0system ) : C0ax4_type CC := pr1 ( pr2 ( pr2 CC ) ) . 
+Definition C0ax4 ( CC : lC0system ) : C0ax4_type CC := pr1 ( pr2 CC ) . 
 
 Definition C0ax5a { CC : lC0system } { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) :
-  ll ( f_star gt0 f ) > 0 := pr1 ( pr1 ( pr2 ( pr2 ( pr2 CC ) ) ) ) X Y gt0 f .
+  ll ( f_star gt0 f ) > 0 := pr1 ( pr1 ( pr2 ( pr2 CC ) ) ) X Y gt0 f .
 
 Definition C0ax5b { CC : lC0system } { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) :
-  ft ( f_star gt0 f ) = Y := pr1 ( pr2 ( pr1 ( pr2 ( pr2 ( pr2 CC ) )))) X Y gt0 f .
+  ft ( f_star gt0 f ) = Y := pr1 ( pr2 ( pr1 ( pr2 ( pr2 CC )))) X Y gt0 f .
 
 Notation ft_f_star := C0ax5b . 
 
@@ -259,12 +264,12 @@ Definition C0ax5c { CC : lC0system }
            { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) : 
   pX ( f_star gt0 f ) ;; ( ( C0emor gt0 f ) ;; f ) =
   ( q_of_f gt0 f ) ;; ( pX X ) :=
-  pr2 ( pr2 ( pr1 ( pr2 ( pr2 ( pr2 CC ) )))) X Y gt0 f . 
+  pr2 ( pr2 ( pr1 ( pr2 ( pr2 CC )))) X Y gt0 f . 
 
 
 Definition C0ax6 { CC : lC0system } { X : CC } ( gt0 : ll X > 0 ) :
   q_of_f gt0 ( identity ( ft X ) ) = mor_to_constr ( identity X ) :=
-  pr1 ( pr2 ( pr2 ( pr2 ( pr2 CC ) ))) X gt0 .
+  pr1 ( pr2 ( pr2 ( pr2 CC ))) X gt0 .
 
 Definition C0ax6a { CC : lC0system } { X : CC } ( gt0 : ll X > 0 ) :
   f_star gt0 ( identity ( ft X ) ) = X :=
@@ -274,7 +279,7 @@ Definition C0ax7 { CC : lC0system }
            { X Y Z : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) ( g : Z --> ft ( f_star gt0 f ) ) :
   mor_to_constr ( ( q_of_f ( C0ax5a gt0 f ) g ) ;; ( q_of_f gt0 f ) ) =
   q_of_f gt0 ( g ;; ( ( C0emor gt0 f ) ;; f ) ) :=
-  pr2 ( pr2 ( pr2 ( pr2 ( pr2 CC ) ))) X Y Z gt0 f g . 
+  pr2 ( pr2 ( pr2 ( pr2 CC ))) X Y Z gt0 f g . 
 
 Definition C0ax7a { CC : lC0system }
            { X Y Z : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) ( g : Z --> ft ( f_star gt0 f ) ) :
@@ -303,7 +308,20 @@ Defined.
 
 (** **** Operations qn and fn_star *)
 
-Definition qn { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+
+
+Definition qn { CC : lC0system_data } { A X : CC } ( f : mor_to A ) ( isov : isover X A )  :
+  mor_to X :=
+  isover_ind ( fun X Y : CC => mor_to Y -> mor_to X )
+             ( fun X => idfun _ )
+             ( fun X gt0 => q_of_mor_to gt0 )
+             ( fun X Y f g => funcomp g f )
+             X A isov f . 
+
+
+
+
+(* Definition qn { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
            { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A )  : mor_to X .
 Proof.
   intros until n . 
@@ -318,11 +336,11 @@ Proof.
   set ( gt0 := natgehgthtrans _ _ _ gtn ( natgthsn0 _ ) ) . 
   apply ( q_of_f gt0 ( IHn ( ft X ) ( ll_ft_gtn gtn ) ( int @ eq ) ) ) . 
 
-Defined.
+Defined. *)
 
 
-Definition fn_star { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
-           { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A ) : CC := pr1 ( qn f n gtn eq ) .
+Definition fn_star { CC : lC0system_data } { X A : CC } ( f : mor_to A ) ( isov : isover X A ) :
+  CC := dom ( qn f isov ) .
 
 
 
@@ -331,7 +349,7 @@ Definition fn_star { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : na
 (** **** Properties of operations qn and fn_star *)
 
 
-Lemma qn_equals_qn { CC : lC0system_data } ( is : isaset CC )
+(* Lemma qn_equals_qn { CC : lC0system_data } ( is : isaset CC )
       { Y A : CC } ( f : Y --> A )
       { n1 n2 : nat } ( eqn : n1 = n2 ) 
       { X : CC }
@@ -351,35 +369,70 @@ Proof.
   rewrite eq' . 
   apply idpath .
 
-Defined.
+Defined. *)
 
 
-Lemma q0 { CC : lC0system } { Y A : CC } ( f : Y --> A ) { n : nat } 
-      { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A )
-      ( eq' : X = A ) :
-  qn f n gtn eq = mor_to_constr ( f ;; id_to_mor ( ! eq' ) )  .
+Lemma q0 { CC : lC0system_data } { X : CC } ( f : mor_to X ) ( isov : isover X X ) :
+  qn f isov = f .
 Proof .
-  intros . assert ( lleq := maponpaths ll eq ) . 
-  rewrite ll_ftn in lleq . 
-  rewrite <- eq' in lleq .
-  assert ( lleq' := maponpaths ( fun x => x + n ) lleq ) . simpl in  lleq' . 
-  rewrite ( minusplusnmm _ _ gtn ) in lleq' . 
-  assert ( lleq'' := maponpaths ( fun x => x - ( ll X ) ) lleq' ) . simpl in lleq'' . 
-  rewrite natminusnn in lleq'' . 
-  rewrite natpluscomm in lleq'' . rewrite plusminusnmm  in lleq'' .
-  assert ( eqint : qn f n gtn eq = qn f 0 ( natgehn0 _ ) eq' ) . 
-  apply qn_equals_qn . 
-  apply C0_isaset_Ob . 
+  intros .  unfold qn .
+  assert ( int := @isover_ind_compt0 CC ( fun X Y : CC => mor_to Y -> mor_to X )
+                            ( fun X => idfun _ )
+                            ( fun X gt0 => q_of_mor_to gt0 )
+                            ( fun X Y f g => funcomp g f ) X isov ) .
+  apply ( maponpaths ( fun g => g f ) int ) .
+  
+Defined.
 
-  apply ( ! lleq'' ) .
-  rewrite eqint . 
-  apply idpath . 
+Opaque q0.
+
+
+Lemma qsn { CC : lC0system_data } { X A : CC } ( f : mor_to A ) ( isab : isabove X A ) ( gt0 : ll X > 0 ) :
+  qn f isab = q_of_mor_to gt0 ( qn f ( isover_ft' isab ) ) . 
+Proof.
+  intros.
+  assert ( int := isover_ind_comptS ( fun X Y : CC => mor_to Y -> mor_to X )
+                            ( fun X => idfun _ )
+                            ( fun X gt0 => q_of_mor_to gt0 )
+                            ( fun X Y f g => funcomp g f ) X A gt0 isab ) .
+  apply ( maponpaths ( fun g => g f ) int ) .
 
 Defined.
 
+Opaque qsn . 
 
 
-Definition qsn_strict { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
+Lemma f0_star { CC : lC0system_data } { X : CC } ( f : mor_to X ) ( isov : isover X X ) :
+  fn_star f isov =  dom f .
+Proof .
+  intros . apply ( maponpaths dom ) . apply q0 . 
+  
+Defined.
+
+Opaque f0_star.
+
+
+Lemma fsn_star { CC : lC0system_data } { X A : CC }
+      ( f : mor_to A ) ( isab : isabove X A ) ( gt0 : ll X > 0 ) :
+  fn_star f isab = f_star gt0 ( qn f ( isover_ft' isab ) ) . 
+Proof.
+  intros. apply ( maponpaths dom ) . apply qsn . 
+  
+Defined.
+
+Opaque fsn_star.
+
+
+
+
+
+
+
+
+
+
+
+(* Definition qsn_strict { CC : lC0system_data } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
       { X : CC } ( gtsn : ll X >= S n ) ( eq : ftn (S n) X = A )  :
   qn f ( S n ) gtsn eq =
   q_of_f (natgehgthtrans _ _ _ gtsn ( natgthsn0 _ ))
@@ -437,16 +490,21 @@ Definition fn_star_to_fsm_star { CC : lC0system } { Y A : CC } ( f : Y --> A ) {
   maponpaths pr1 ( qn_to_qsm _ _ _ _ ) . 
 
 
+*)
 
 
 
+(*
 
-
-
-Lemma ll_fn_star { CC : lC0system } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
-      { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A ) :
-  ll ( fn_star f n gtn eq ) = ll Y + n . 
+Lemma ll_fn_star { CC : lC0system_data } { A X : CC } ( f : mor_to A ) ( isov : isover X A ) :
+  ll ( fn_star f isov ) = ll ( dom f ) + ( ll X - ll A ) . 
 Proof.
+  intros. 
+  destruct ( ovab_choice isov ) as [ isab | iseq ] . 
+
+
+
+  
   intros until n . induction n as [ | n IHn ] .
   intros .
   rewrite natplusr0 . apply idpath .
@@ -477,7 +535,7 @@ Defined.
 
 
 
-
+*)
 
 
 
