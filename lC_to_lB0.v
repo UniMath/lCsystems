@@ -21,7 +21,7 @@ Definition Tilde_from_C ( CC : ltower_precat_and_p ) :=
 
 Lemma isaset_Tilde_from_C ( CC : lC0system ) : isaset ( Tilde_from_C CC ) .
 Proof.
-  intros . set ( is1 := C0_has_homsets CC ) . set ( is2 := C0_isaset_Ob CC ) .  
+  intros . set ( is1 := isaset_mor CC ) . set ( is2 := isaset_ob CC ) .  
   apply ( isofhleveltotal2 2 ) . 
   apply is2 . 
 
@@ -63,7 +63,7 @@ Proof .
   intros .  
   refine ( lBsystem_carrier_constr _ _ ) . 
   refine ( hSet_pltower_constr _ _ ) .
-  apply ( hSet_ltower_constr CC ( C0_isaset_Ob CC ) ) . 
+  apply ( hSet_ltower_constr CC ( isaset_ob CC ) ) . 
 
   apply ( ispointed CC ) . 
 
@@ -95,17 +95,7 @@ Proof.
   intros.
   unfold T_ops_type . 
   intros X1 X2 inn .
-  set ( f := pX X1 : ( X1 --> ft X1 ) ) .
-  set ( n := ll X2 - ( ll ( ft X1 ) ) ) .
-  assert ( e : ftn n X2 = ft X1 ) .
-  assert ( isov := isabove_to_isover (T_dom_isabove inn )) .
-  
-  unfold isover in isov . 
-  apply ( ! isov ) .
-
-  assert ( gtn : ll X2 >= n ) . apply natminuslehn .
-  
-  apply ( fn_star f n gtn e ) . 
+  apply ( fn_star (mor_to_constr ( pX X1 )) ( T_dom_isabove inn ) ) . 
 
 Defined.
 
@@ -117,30 +107,19 @@ Proof.
   intros.
   unfold T_ax1a_type.
   intros .
-  unfold T_from_C . 
-  assert ( eq : ll X2 - ll (ft X1)  = S ( ll ( ft X2 ) - ll ( ft X1 ) ) ) .
-  rewrite ( ll_ft X2 ) . 
-  rewrite natminuscomm .
-  change  ( ll X2 - ll (ft X1) = 1 + ( ll X2 - ll ( ft X1 ) - 1 ) ) .  
-  rewrite <- natassocpmeq . 
-  simpl . rewrite natminuseqn . 
+  unfold T_from_C .
+  rewrite ( f_star_isab _ (T_dom_isabove inn)).
+  rewrite ( @ft_f_star CC ) .
+  set ( isov1 := isover_ft' (T_dom_isabove inn) ) .
+  change (isover_ft' (T_dom_isabove inn)) with isov1 . 
+  set ( isov2 := T_dom_isabove (T_ax1a_dom inn isab) ) .
+  change (T_dom_isabove (T_ax1a_dom inn isab)) with isov2 .
+  assert ( eq : isov1 = isov2 ) .
+  apply proofirrelevance . apply isaprop_isover .
+  rewrite eq . 
   apply idpath . 
 
-  apply gth0_to_geh1 . 
-  apply minusgth0 . 
-  apply ( T_dom_gth inn ) .
-
-  rewrite ( fn_star_to_fsm_star _ _ _ eq ) .
-  rewrite fsn_strict . 
-  rewrite ( @ft_f_star CC ).
-  unfold fn_star . 
-  apply ( maponpaths pr1 ) .  apply qn_equals_qn . 
-  apply C0_isaset_Ob .
-
-  apply idpath . 
-  
 Defined.
-
 
  
 Lemma T_ax1b_from_C ( CC : lC0system ) : T_ax1b_type ( T_from_C CC ) .
@@ -149,17 +128,12 @@ Proof.
   unfold T_ax1b_type . 
   intros .
   refine ( isabove_constr _ _ ) .
-  unfold T_from_C . 
-  rewrite (@ll_fn_star CC) . 
-  rewrite ll_ft .
-  rewrite ( natpluscomm ( ll X1 ) _ ) . 
-  change  ( ll X2 - (ll X1 - 1) + ll X1 > 0 + ( ll X1 ) ) . 
-  apply natgthandplusr . 
-  apply minusgth0 . 
-  unfold T_dom in inn . 
-  rewrite <- ll_ft .
-  apply ( isabove_gth ( T_dom_isabove inn ) ) . 
-
+  unfold T_from_C .
+  apply ( natgthandplusrinv _ _ ( ll ( ft X1 ) ) ) . 
+  rewrite (@ll_fn_star CC) . change  (ll (dom (mor_to_constr (pX X1)))) with ( ll X1 ) .
+  apply natgthandplusl .
+  apply ( T_dom_isabove inn ) .
+  
   unfold T_from_C . apply isover_fn_star . 
 
 Defined.
@@ -172,28 +146,26 @@ Proof.
   intros.
   unfold T_ax0_type . 
   intros X1 X2 inn .
-  unfold T_from_C . 
-  rewrite ( @ll_fn_star CC ) . 
-  rewrite ll_ft . 
-  rewrite <- natassocmpeq . rewrite <- natplusassoc .  rewrite ( natpluscomm ( ll X1 ) _ ) .
-  rewrite minusplusnmm . 
-  apply natpluscomm . 
-
-  apply ( T_dom_geh inn ) . 
-
-  apply ( T_dom_geh inn ) . 
-
-  apply ( gth0_to_geh1 ( T_dom_gt0 inn ) ) .
+  unfold T_from_C .
+  apply ( natplusrcan _ _ ( ll ( ft X1 ) ) ) .  
+  rewrite ( @ll_fn_star CC ) .
+  change  (ll (dom (mor_to_constr (pX X1)))) with ( ll X1 ) .
+  rewrite ( natpluscomm _ ( ll ( ft X1 ) ) ) .
+  rewrite <- natplusassoc .
+  rewrite ( natpluscomm _ 1 ) . 
+  rewrite S_ll_ft . 
+  apply idpath .
+  apply ( T_dom_gt0 inn ) . 
 
 Defined.
+
+
 
 
 (** **** Morphism qT *)
 
 Definition qT { CC : lC0system } { X1 X2 : B_carrier_from_C CC } ( inn : T_dom X1 X2 ) :
-  mor_to X2 :=
-  qn (pX X1) (ll X2 - ll (ft X1)) (natminuslehn (ll X2) (ll (ft X1)))
-     (! ( isabove_to_isover ( T_dom_isabove inn) ) ).
+  mor_to X2 := qn ( mor_to_constr (pX X1) ) ( T_dom_isabove inn ) . 
 
 Definition dom_qT { CC : lC0system } { X1 X2 : B_carrier_from_C CC } ( inn : T_dom X1 X2 ) :
   ( pr1 ( qT inn ) ) = T_from_C CC _ _ inn :=

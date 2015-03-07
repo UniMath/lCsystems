@@ -45,6 +45,11 @@ Definition id_to_mor { C : precategory_data } { X X' : C } ( e : X = X' ) : X --
 
 (** To precategories *)
 
+Definition isaset_ob ( C : setcategory ) : isaset C := pr1 ( pr2 C ) .
+
+Definition isaset_mor ( C : setcategory ) : has_homsets C := pr2 ( pr2 C ) . 
+
+
 (** *** The C0-systems
 
 The following sequence of definitions is a formalization of Definition 2.1 in Csubsystems *)
@@ -67,8 +72,8 @@ Definition ltower_precat_to_ltower ( CC : ltower_precat ) : hSet_ltower :=
     ( pr1 ( pr2 ( pr1  CC ) ) ) .
 Coercion ltower_precat_to_ltower : ltower_precat >-> hSet_ltower .
 
-Definition ltower_precat_pr1 : ltower_precat -> precategory := pr1 .
-Coercion ltower_precat_pr1 : ltower_precat >-> precategory .
+Definition ltower_precat_pr1 : ltower_precat -> setcategory := pr1 .
+Coercion ltower_precat_pr1 : ltower_precat >-> setcategory .
 
 Definition ltower_precat_and_p :=
   total2 ( fun CC : ltower_precat  => forall X : CC , X --> ft X ) .
@@ -299,8 +304,24 @@ Proof .
 
 Defined.
 
+Lemma isover_f_star { CC : lC0system } { X Y : CC } ( gt0 : ll X > 0 ) ( f : Y --> ft X ) :
+  isover ( f_star gt0 f ) Y .
+Proof.
+  intros. set ( eq := C0ax5b gt0 f ) . unfold isover . 
+  assert ( eq1 : ll ( f_star gt0 f ) - ll Y = 1 ) .
+  rewrite ll_f_star . 
+  apply plusminusnmm . 
+  rewrite eq1 . 
+  exact ( ! eq ) . 
+
+Defined.
 
 
+
+
+
+
+  
 
 
 (** *** Operations qn, fn_star and f_star_of_s and fn_star_of_s  *)
@@ -372,11 +393,11 @@ Proof.
 Defined. *)
 
 
-Lemma q0 { CC : lC0system_data } { X : CC } ( f : mor_to X ) ( isov : isover X X ) :
+Lemma q_XX { CC : lC0system_data } { X : CC } ( f : mor_to X ) ( isov : isover X X ) :
   qn f isov = f .
 Proof .
   intros .  unfold qn .
-  assert ( int := @isover_ind_compt0 CC ( fun X Y : CC => mor_to Y -> mor_to X )
+  assert ( int := @isover_ind_XX CC ( fun X Y : CC => mor_to Y -> mor_to X )
                             ( fun X => idfun _ )
                             ( fun X gt0 => q_of_mor_to gt0 )
                             ( fun X Y f g => funcomp g f ) X isov ) .
@@ -384,47 +405,69 @@ Proof .
   
 Defined.
 
-Opaque q0.
+Opaque q_XX.
 
 
-Lemma qsn { CC : lC0system_data } { X A : CC } ( f : mor_to A ) ( isab : isabove X A ) ( gt0 : ll X > 0 ) :
-  qn f isab = q_of_mor_to gt0 ( qn f ( isover_ft' isab ) ) . 
+Lemma q_isab { CC : lC0system_data } { X A : CC } ( f : mor_to A ) ( isab : isabove X A ) :
+  qn f isab = q_of_mor_to ( isabove_gt0 isab ) ( qn f ( isover_ft' isab ) ) . 
 Proof.
   intros.
-  assert ( int := isover_ind_comptS ( fun X Y : CC => mor_to Y -> mor_to X )
+  assert ( int := isover_ind_isab ( fun X Y : CC => mor_to Y -> mor_to X )
                             ( fun X => idfun _ )
                             ( fun X gt0 => q_of_mor_to gt0 )
-                            ( fun X Y f g => funcomp g f ) X A gt0 isab ) .
+                            ( fun X Y f g => funcomp g f ) X A isab ) .
   apply ( maponpaths ( fun g => g f ) int ) .
 
 Defined.
 
-Opaque qsn . 
+Opaque q_isab .
 
 
-Lemma f0_star { CC : lC0system_data } { X : CC } ( f : mor_to X ) ( isov : isover X X ) :
+Lemma q_X_ftX { CC : lC0system_data } { X : CC } ( f : mor_to ( ft X ) ) ( gt0 : ll X > 0 ) :
+  qn f ( isover_X_ftX X ) = q_of_mor_to gt0 f .
+Proof.
+  intros.
+  unfold qn . 
+  apply ( maponpaths ( fun g => g f ) ) .
+  refine ( isover_ind_X_ftX _ _ _ _ _ _ _ ) . 
+  intros X0 gt1 . 
+  apply idpath . 
+
+Defined.
+
+Opaque q_X_ftX . 
+
+
+
+Lemma f_star_XX { CC : lC0system_data } { X : CC } ( f : mor_to X ) ( isov : isover X X ) :
   fn_star f isov =  dom f .
 Proof .
-  intros . apply ( maponpaths dom ) . apply q0 . 
+  intros . apply ( maponpaths dom ) . apply q_XX . 
   
 Defined.
 
-Opaque f0_star.
+Opaque f_star_XX.
 
 
-Lemma fsn_star { CC : lC0system_data } { X A : CC }
-      ( f : mor_to A ) ( isab : isabove X A ) ( gt0 : ll X > 0 ) :
-  fn_star f isab = f_star gt0 ( qn f ( isover_ft' isab ) ) . 
+Lemma f_star_isab { CC : lC0system_data } { X A : CC } 
+      ( f : mor_to A ) ( isab : isabove X A ) :
+  fn_star f isab = f_star ( isabove_gt0 isab ) ( qn f ( isover_ft' isab ) ) . 
 Proof.
-  intros. apply ( maponpaths dom ) . apply qsn . 
+  intros. apply ( maponpaths dom ) . apply q_isab. 
   
 Defined.
 
-Opaque fsn_star.
+Opaque f_star_isab.
 
 
+Lemma f_star_X_ftX { CC : lC0system_data } { X : CC } ( f : mor_to ( ft X ) ) ( gt0 : ll X > 0 ) :
+  fn_star f ( isover_X_ftX X ) = f_star gt0 f .
+Proof.
+  intros . 
+  apply ( maponpaths dom ) . 
+  apply q_X_ftX .
 
-
+Defined.
 
 
 
@@ -494,48 +537,85 @@ Definition fn_star_to_fsm_star { CC : lC0system } { Y A : CC } ( f : Y --> A ) {
 
 
 
-(*
 
-Lemma ll_fn_star { CC : lC0system_data } { A X : CC } ( f : mor_to A ) ( isov : isover X A ) :
-  ll ( fn_star f isov ) = ll ( dom f ) + ( ll X - ll A ) . 
+
+Lemma ll_fn_star { CC : lC0system } { A X : CC } ( f : mor_to A ) ( isov : isover X A ) :
+  ll ( fn_star f isov ) + ll A  = ll ( dom f ) + ll X . 
 Proof.
-  intros. 
-  destruct ( ovab_choice isov ) as [ isab | iseq ] . 
+  intros.
+  set ( P := fun ( X0 Y0 : CC ) ( isov0 : isover X0 Y0 ) =>
+               forall ( f0 : mor_to Y0 ) , ll ( fn_star f0 isov0 ) + ll Y0  = ll ( dom f0 ) + ll X0 ) .
+  assert ( P0 : forall X0 , P X0 X0 ( isover_XX X0 ) ) . intro . unfold P . intro. 
+  rewrite f_star_XX . apply idpath .
+
+  assert ( Pft : forall X0 ( gt0 : ll X0 > 0 )  , P X0 ( ft X0 ) ( isover_X_ftX X0 ) ) .    
+  intros . unfold P . intro f0 . rewrite ( f_star_X_ftX f0 gt0 ) .
+  rewrite ( ll_f_star gt0 f0 ) . 
+  rewrite ( natpluscomm 1 _ ) . 
+  rewrite natplusassoc . 
+  apply ( maponpaths ( fun x => ll (dom f0) + x ) ) .
+  apply S_ll_ft . 
+  apply gt0.
+
+  assert ( Pcomp : forall ( X Y : CC ) ,
+                       ( forall isov1 , P X ( ft X ) isov1 ) ->
+                       ( forall isov2 , P ( ft X ) Y isov2 ) ->
+                       forall ( isab : isabove X Y ) , P X Y isab )  . 
+  intros X0 Y0 F0 G0 isab . 
+  unfold P . 
+  intro f0 . 
+  rewrite f_star_isab . 
+  rewrite ll_f_star . 
+  assert ( eq := G0 (isover_ft' isab) ) . unfold P in eq .
+  change (pr1 (qn f0 (isover_ft' isab))) with ( fn_star f0 (isover_ft' isab) ) . 
+  rewrite natplusassoc . rewrite ( eq f0 ) . 
+  rewrite ( natpluscomm ( ll ( dom f0 ) ) ) . rewrite <- natplusassoc.
+  rewrite S_ll_ft . 
+  apply natpluscomm . 
+
+  apply ( isabove_gt0 isab ) . 
+
+  apply ( isover_strong_ind_int P P0 Pft Pcomp _ _ _ isov _ ) . 
+
+Defined.
 
 
+ 
 
+Lemma isover_fn_star { CC : lC0system } { X A : CC } ( f : mor_to A ) ( isov : isover X A ) :
+  isover ( fn_star f isov ) ( dom f ) .
+Proof.
+  intros.
+  set ( P := fun ( X0 Y0 : CC ) ( isov0 : isover X0 Y0 ) =>
+               forall ( f0 : mor_to Y0 ) , isover ( fn_star f0 isov0 ) ( dom f0 ) ) .
+  assert ( P0 : forall X0 , P X0 X0 ( isover_XX X0 ) ) . intro . unfold P . intro. 
+  rewrite f_star_XX . apply isover_XX.
+
+  assert ( Pft : forall X0 ( gt0 : ll X0 > 0 )  , P X0 ( ft X0 ) ( isover_X_ftX X0 ) ) .    
+  intros . unfold P . intro f0 . rewrite ( f_star_X_ftX f0 gt0 ) .
+  apply isover_f_star . 
   
-  intros until n . induction n as [ | n IHn ] .
-  intros .
-  rewrite natplusr0 . apply idpath .
+  assert ( Pcomp : forall ( X Y : CC ) ,
+                       ( forall isov1 , P X ( ft X ) isov1 ) ->
+                       ( forall isov2 , P ( ft X ) Y isov2 ) ->
+                       forall ( isab : isabove X Y ) , P X Y isab )  . 
+  intros X0 Y0 F0 G0 isab . 
+  unfold P . 
+  intro f0 . 
+  rewrite f_star_isab .
+  refine ( isover_trans _ _ ) .  
+  apply ( dom (qn f0 (isover_ft' isab))). 
+  apply isover_f_star .
+  apply G0 . 
 
-  intros . 
-  change ( ll ( fn_star _ _ _ _ ) ) with ( ll ( f_star (natgehgthtrans _ _ _ gtn ( natgthsn0 _ ))
-         ( qn f n ( ll_ft_gtn gtn ) ( ( ftn_ft n X ) @ eq ) ) ) ) . 
-  rewrite ll_f_star .
-  unfold fn_star in IHn . rewrite IHn .
-  apply ( ! ( natplusnsm ( ll Y ) n ) ) . 
+  apply ( isover_strong_ind_int P P0 Pft Pcomp _ _ _ isov _ ) . 
 
-Defined.
-
-Lemma isover_fn_star { CC : lC0system } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
-      { X : CC } ( gtn : ll X >= n ) ( eq : ftn n X = A ) : isover ( fn_star f n gtn eq ) Y .
-Proof.
-  intros until n .  induction n as [ | n IHn ] .
-  intros .  apply isover_XX . 
-
-  intros .
-  refine ( isover_trans ( isover_X_ftX _ ) _ ) . 
-  change (fn_star f (S n) gtn eq) with ( f_star (natgehgthtrans _ _ _ gtn ( natgthsn0 _ ))
-                                                ( qn f n ( ll_ft_gtn gtn ) ( ( ftn_ft n X ) @ eq ) ) ) .
-  rewrite ft_f_star .
-  apply IHn . 
 
 Defined.
 
 
 
-*)
+
 
 
 

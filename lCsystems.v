@@ -146,20 +146,19 @@ Defined.
 (** **** Operation fsn_star_of_s *)
 
 
-Definition fsn_star_of_s { CC : lCsystem } { Y A : CC } ( f : Y --> A ) ( n : nat ) 
-           { X : CC } ( gtsn : ll X >= 1 + n ) ( eq : ftn ( 1 + n ) X = A ) ( r : sec_pX X ) :
-  sec_pX ( fn_star f ( 1 + n ) gtsn eq ) .  
-Proof .
+Definition fsn_star_of_s { CC : lCsystem } { A X : CC } ( f : mor_to A ) ( isab : isabove X A )
+           ( r : sec_pX X ) : sec_pX ( fn_star f isab ) .  
+Proof.
   intros.
-  set ( int := ftn_ft n X : ftn n ( ft X ) = ftn ( 1 + n ) X ) .
-  set ( gt0 := natgehgthtrans _ _ _ gtsn ( natgthsn0 _ ) ) .
-  set ( qnint :=   qn f n ( ll_ft_gtn gtsn ) ( int @ eq ) : mor_to ( ft X ) ) . 
-  change ( fn_star f ( 1 + n ) gtsn eq ) with ( f_star gt0 qnint ) .
-  apply ( f_star_of_s qnint gt0 r ) . 
+  rewrite f_star_isab .
+  apply f_star_of_s . 
+  exact r .
 
 Defined.
 
 
+ 
+   
 (*
 
                                 
